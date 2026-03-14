@@ -8,6 +8,7 @@ import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
 
 let idCounter = 0;
+const makeId = () => `w_${Date.now()}_${idCounter++}`;
 
 export default function BoardCanvas() {
   const { user } = useAuth();
