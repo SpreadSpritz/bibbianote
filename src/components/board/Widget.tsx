@@ -26,7 +26,7 @@ export default function Widget({
   onLinkClick,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [showColors, setShowColors] = React.useState(false);
+  const [showColors, setShowColors] = useState(false);
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
 
