@@ -8,6 +8,7 @@ import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
 
 let idCounter = 0;
+const makeId = () => `w_${Date.now()}_${idCounter++}`;
 
 export default function BoardCanvas() {
   const { user } = useAuth();
@@ -38,11 +39,21 @@ export default function BoardCanvas() {
     (e: DragEvent) => {
       e.preventDefault();
       const type = e.dataTransfer.getData("widget-type") as WidgetData["type"];
-      if (!type) return;
+      const existingId = e.dataTransfer.getData("widget-id");
 
+      // Moving an existing widget out of a panel onto the canvas
+      if (existingId) {
+        const boardX = (e.clientX - board.panX) / board.scale;
+        const boardY = (e.clientY - board.panY) / board.scale;
+        store.updateWidget(existingId, { parentId: null, x: boardX - 80, y: boardY - 40 });
+        save();
+        return;
+      }
+
+      if (!type) return;
       const boardX = (e.clientX - board.panX) / board.scale;
       const boardY = (e.clientY - board.panY) / board.scale;
-      const id = `w_${Date.now()}_${idCounter++}`;
+      const id = makeId();
       const isPanel = type.startsWith("pannello");
 
       store.addWidget({
@@ -66,6 +77,39 @@ export default function BoardCanvas() {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   }, []);
+
+  // Drop new widget into a panel
+  const handleDropIntoPanel = useCallback(
+    (panelId: string, type: WidgetData["type"]) => {
+      const id = makeId();
+      store.addWidget({
+        id,
+        type,
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 100,
+        color: "",
+        content: "",
+        parentId: panelId,
+        snap: false,
+      });
+      save();
+    },
+    [store, save]
+  );
+
+  // Move existing widget into a panel
+  const handleWidgetDropIntoPanel = useCallback(
+    (panelId: string, widgetId: string) => {
+      // Don't allow dropping a panel into itself or nesting panels
+      const w = board.widgets.find((w) => w.id === widgetId);
+      if (!w || w.id === panelId || w.type.startsWith("pannello")) return;
+      store.updateWidget(widgetId, { parentId: panelId, x: 0, y: 0 });
+      save();
+    },
+    [board.widgets, store, save]
+  );
 
   // Pan start on viewport
   const handleVpPointerDown = useCallback(
@@ -238,6 +282,7 @@ export default function BoardCanvas() {
               <Widget
                 key={w.id}
                 widget={w}
+                children={board.widgets.filter((c) => c.parentId === w.id)}
                 scale={board.scale}
                 onUpdate={store.updateWidget}
                 onRemove={(id) => {
@@ -248,6 +293,8 @@ export default function BoardCanvas() {
                 onResizeStart={handleResizeStart}
                 linkMode={linkMode}
                 onLinkClick={handleLinkClick}
+                onDropIntoPanel={handleDropIntoPanel}
+                onWidgetDropIntoPanel={handleWidgetDropIntoPanel}
               />
             ))}
         </div>

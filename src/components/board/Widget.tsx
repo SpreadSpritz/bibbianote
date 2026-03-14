@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
+import { useRef, useCallback, useState, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import type { WidgetData } from "@/types/board";
 import { X, Palette, Link } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,6 +7,7 @@ const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1"
 
 interface WidgetProps {
   widget: WidgetData;
+  children?: WidgetData[];
   scale: number;
   onUpdate: (id: string, updates: Partial<WidgetData>) => void;
   onRemove: (id: string) => void;
@@ -14,10 +15,13 @@ interface WidgetProps {
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
+  onDropIntoPanel?: (panelId: string, widgetType: WidgetData["type"], e: DragEvent) => void;
+  onWidgetDropIntoPanel?: (panelId: string, widgetId: string) => void;
 }
 
 export default function Widget({
   widget,
+  children,
   scale,
   onUpdate,
   onRemove,
@@ -25,9 +29,12 @@ export default function Widget({
   onResizeStart,
   linkMode,
   onLinkClick,
+  onDropIntoPanel,
+  onWidgetDropIntoPanel,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
@@ -44,7 +51,6 @@ export default function Widget({
       onLinkClick(widget.id);
       return;
     }
-    // Handle clicking on links inside the widget body
     const target = e.target as HTMLElement;
     if (target.tagName === "A" && target.getAttribute("href")) {
       e.preventDefault();
@@ -56,7 +62,6 @@ export default function Widget({
   const insertLink = useCallback(() => {
     const url = prompt("URL:");
     if (!url) return;
-    // Basic URL validation
     try {
       new URL(url.startsWith("http") ? url : `https://${url}`);
     } catch {
@@ -74,16 +79,57 @@ export default function Widget({
     }
   }, [handleContentChange]);
 
+  // Panel drop handling
+  const handlePanelDragOver = useCallback((e: DragEvent) => {
+    if (!isPanel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "copy";
+    setDragOver(true);
+  }, [isPanel]);
+
+  const handlePanelDragLeave = useCallback((e: DragEvent) => {
+    if (!isPanel) return;
+    e.stopPropagation();
+    setDragOver(false);
+  }, [isPanel]);
+
+  const handlePanelDrop = useCallback((e: DragEvent) => {
+    if (!isPanel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+
+    const widgetType = e.dataTransfer.getData("widget-type") as WidgetData["type"];
+    const existingWidgetId = e.dataTransfer.getData("widget-id");
+
+    if (existingWidgetId && onWidgetDropIntoPanel) {
+      onWidgetDropIntoPanel(widget.id, existingWidgetId);
+    } else if (widgetType && onDropIntoPanel) {
+      onDropIntoPanel(widget.id, widgetType, e);
+    }
+  }, [isPanel, widget.id, onDropIntoPanel, onWidgetDropIntoPanel]);
+
+  // For child widgets inside panels - make them draggable via HTML drag
+  const handleChildDragStart = useCallback((childId: string, e: DragEvent) => {
+    e.dataTransfer.setData("widget-id", childId);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
+
+  const isInPanel = !!widget.parentId;
+
   return (
     <div
       data-widget-id={widget.id}
-      className={`absolute rounded-xl flex flex-col widget-card ${isPanel ? "panel-widget border border-border bg-card/80" : "bg-card"} ${linkMode ? "cursor-crosshair" : ""}`}
+      draggable={isInPanel}
+      onDragStart={isInPanel ? (e: DragEvent) => handleChildDragStart(widget.id, e as any) : undefined}
+      className={`${isInPanel ? "relative" : "absolute"} rounded-xl flex flex-col widget-card ${isPanel ? `panel-widget border-2 ${dragOver ? "border-primary bg-primary/5" : "border-border bg-card/80"}` : "bg-card"} ${linkMode ? "cursor-crosshair" : ""} ${isInPanel ? "cursor-grab" : ""}`}
       style={{
-        left: widget.x,
-        top: widget.y,
-        width: widget.width,
+        ...(isInPanel
+          ? { width: widget.type === "pannello_o" ? undefined : "100%", minWidth: isInPanel ? 160 : undefined, flexShrink: 0 }
+          : { left: widget.x, top: widget.y, width: widget.width }),
         minHeight: 80,
-        height: widget.height || "auto",
+        height: isInPanel ? "auto" : (widget.height || "auto"),
         backgroundColor: widget.color || undefined,
         zIndex: 1,
       }}
@@ -94,7 +140,7 @@ export default function Widget({
         className={`h-7 bg-foreground/[0.035] rounded-t-xl flex items-center justify-between px-2.5 ${isPanel ? "" : "widget-header"}`}
         style={{ cursor: linkMode ? "crosshair" : "grab" }}
         onPointerDown={(e) => {
-          if (linkMode) return;
+          if (linkMode || isInPanel) return;
           e.stopPropagation();
           onDragStart(widget.id, e);
         }}
@@ -155,24 +201,55 @@ export default function Widget({
       </div>
 
       {/* Body */}
-      <div
-        ref={bodyRef}
-        className={`p-4 flex-1 ${isPanel ? (widget.type === "pannello_v" ? "flex flex-col gap-4" : "flex flex-row gap-4 overflow-x-auto") : ""}`}
-        contentEditable={!isPanel && !linkMode}
-        suppressContentEditableWarning
-        onBlur={handleContentChange}
-        dangerouslySetInnerHTML={!isPanel ? { __html: widget.content || "" } : undefined}
-        data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
-        style={{
-          outline: "none",
-          minHeight: 30,
-          cursor: isPanel ? "default" : linkMode ? "crosshair" : "text",
-          userSelect: linkMode ? "none" : "text",
-        }}
-      />
+      {isPanel ? (
+        <div
+          ref={bodyRef}
+          className={`p-3 flex-1 ${widget.type === "pannello_v" ? "flex flex-col gap-3" : "flex flex-row gap-3 overflow-x-auto"}`}
+          onDragOver={handlePanelDragOver}
+          onDragLeave={handlePanelDragLeave}
+          onDrop={handlePanelDrop}
+          style={{ minHeight: 60 }}
+        >
+          {children && children.length > 0 ? (
+            children.map((child) => (
+              <Widget
+                key={child.id}
+                widget={child}
+                scale={scale}
+                onUpdate={onUpdate}
+                onRemove={onRemove}
+                onDragStart={onDragStart}
+                onResizeStart={onResizeStart}
+                linkMode={linkMode}
+                onLinkClick={onLinkClick}
+              />
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground/50 text-sm pointer-events-none select-none">
+              {widget.type === "pannello_v" ? "↕ Drop here" : "↔ Drop here"}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          ref={bodyRef}
+          className="p-4 flex-1"
+          contentEditable={!linkMode}
+          suppressContentEditableWarning
+          onBlur={handleContentChange}
+          dangerouslySetInnerHTML={{ __html: widget.content || "" }}
+          data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
+          style={{
+            outline: "none",
+            minHeight: 30,
+            cursor: linkMode ? "crosshair" : "text",
+            userSelect: linkMode ? "none" : "text",
+          }}
+        />
+      )}
 
       {/* Resizer */}
-      {!linkMode && (
+      {!linkMode && !isInPanel && (
         <div
           className="absolute right-1.5 bottom-1.5 w-4 h-4 cursor-nwse-resize border-r-2 border-b-2 border-foreground/20 rounded-br-sm z-[100]"
           onPointerDown={(e) => {
