@@ -4,7 +4,7 @@ import BoardCanvas from "@/components/board/BoardCanvas";
 
 const Index = () => {
   const { user, loading } = useAuth();
-
+  console.log("[Index] loading:", loading, "user:", user?.uid);
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
