@@ -33,7 +33,7 @@ function ToolBtn({
   onClick,
   active,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;

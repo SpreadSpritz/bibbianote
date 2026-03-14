@@ -36,7 +36,7 @@ export default function Widget({
     }
   }, [widget.id, onUpdate]);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     if (linkMode) {
       e.stopPropagation();
       onLinkClick(widget.id);

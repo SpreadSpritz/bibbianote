@@ -94,7 +94,7 @@ export default function BoardCanvas() {
 
   // Pointer move
   const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
+    (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
       const dx = e.clientX - d.startX;
