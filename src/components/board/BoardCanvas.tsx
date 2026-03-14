@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent, type DragEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoardStore } from "@/hooks/useBoardStore";
 import type { WidgetData } from "@/types/board";
@@ -33,36 +33,45 @@ export default function BoardCanvas() {
     if (user?.uid) store.load();
   }, [user?.uid]);
 
-  // Spawn widget
-  const handleSpawn = useCallback(
-    (type: WidgetData["type"]) => {
-      const cx = (window.innerWidth / 2 - board.panX) / board.scale;
-      const cy = (window.innerHeight / 2 - board.panY) / board.scale;
+  // Drop handler for drag-and-drop from toolbar
+  const handleDrop = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+      const type = e.dataTransfer.getData("widget-type") as WidgetData["type"];
+      if (!type) return;
+
+      const boardX = (e.clientX - board.panX) / board.scale;
+      const boardY = (e.clientY - board.panY) / board.scale;
       const id = `w_${Date.now()}_${idCounter++}`;
+      const isPanel = type.startsWith("pannello");
+
       store.addWidget({
         id,
         type,
-        x: cx - 125,
-        y: cy - 40,
+        x: boardX - 125,
+        y: boardY - (isPanel ? 100 : 40),
         width: 250,
-        height: type.startsWith("pannello") ? 200 : 120,
+        height: isPanel ? 200 : 120,
         color: "",
         content: "",
         parentId: null,
-        snap: type.startsWith("pannello"),
+        snap: isPanel,
       });
       save();
     },
     [board.panX, board.panY, board.scale, store, save]
   );
 
+  const handleDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
   // Pan start on viewport
   const handleVpPointerDown = useCallback(
     (e: PointerEvent) => {
       if (linkMode) return;
       const target = e.target as HTMLElement;
-      if (target !== vpRef.current && !target.closest("#board-root") === null) return;
-      // Only pan if clicking viewport/board background
       if (target.closest("[data-widget-id]")) return;
       dragRef.current = { type: "pan", startX: e.clientX, startY: e.clientY, initX: board.panX, initY: board.panY };
       (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -187,7 +196,6 @@ export default function BoardCanvas() {
   return (
     <div className="fixed inset-0">
       <Toolbar
-        onSpawn={handleSpawn}
         linkMode={linkMode}
         onToggleLinkMode={() => {
           setLinkMode(!linkMode);
@@ -202,6 +210,8 @@ export default function BoardCanvas() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
         style={{
           backgroundPosition: `${board.panX}px ${board.panY}px`,
           backgroundSize: `${30 * board.scale}px ${30 * board.scale}px`,
