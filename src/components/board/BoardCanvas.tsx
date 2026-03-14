@@ -282,6 +282,7 @@ export default function BoardCanvas() {
               <Widget
                 key={w.id}
                 widget={w}
+                children={board.widgets.filter((c) => c.parentId === w.id)}
                 scale={board.scale}
                 onUpdate={store.updateWidget}
                 onRemove={(id) => {
@@ -292,6 +293,8 @@ export default function BoardCanvas() {
                 onResizeStart={handleResizeStart}
                 linkMode={linkMode}
                 onLinkClick={handleLinkClick}
+                onDropIntoPanel={handleDropIntoPanel}
+                onWidgetDropIntoPanel={handleWidgetDropIntoPanel}
               />
             ))}
         </div>
