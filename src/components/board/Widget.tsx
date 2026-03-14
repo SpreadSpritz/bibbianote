@@ -28,6 +28,7 @@ export default function Widget({
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
+  const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
 
