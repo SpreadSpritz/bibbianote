@@ -1,5 +1,5 @@
-
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavControlsProps {
   syncStatus: "offline" | "syncing" | "saved" | "error";
@@ -11,11 +11,12 @@ interface NavControlsProps {
 
 export default function NavControls({ syncStatus, scale, onZoomIn, onZoomOut, onRecenter }: NavControlsProps) {
   const { logout } = useAuth();
+  const { t } = useLanguage();
   const statusMap = {
-    offline: { icon: "🔴", text: "Assente" },
-    syncing: { icon: "⏳", text: "Salvataggio..." },
-    saved: { icon: "🟢", text: "Salvato" },
-    error: { icon: "⚠️", text: "Errore" },
+    offline: { icon: "🔴", text: t("offline") },
+    syncing: { icon: "⏳", text: t("syncing") },
+    saved: { icon: "🟢", text: t("saved") },
+    error: { icon: "⚠️", text: t("error") },
   };
   const s = statusMap[syncStatus];
 
@@ -25,9 +26,9 @@ export default function NavControls({ syncStatus, scale, onZoomIn, onZoomOut, on
         {s.icon} {s.text}
       </span>
       <button onClick={logout} className="text-xs text-destructive font-semibold border-r border-border pr-2">
-        Log Out
+        {t("logout")}
       </button>
-      <button onClick={onRecenter} className="text-xs text-muted-foreground">Reset</button>
+      <button onClick={onRecenter} className="text-xs text-muted-foreground">{t("reset")}</button>
       <button onClick={onZoomOut} className="text-base">-</button>
       <span className="w-11 text-center font-semibold">{Math.round(scale * 100)}%</span>
       <button onClick={onZoomIn} className="text-base">+</button>

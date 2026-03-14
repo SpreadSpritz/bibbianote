@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FileText, CheckSquare, Image, Columns, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ToolbarProps {
   onSpawn: (type: "nota" | "todo" | "foto" | "pannello_v" | "pannello_o") => void;
@@ -8,18 +9,20 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ onSpawn, linkMode, onToggleLinkMode }: ToolbarProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="fixed left-5 top-1/2 -translate-y-1/2 bg-card/95 p-2.5 rounded-2xl shadow-lg z-[1000] flex flex-col gap-3">
-      <ToolBtn icon={<FileText size={22} />} label="Nota" onClick={() => onSpawn("nota")} />
-      <ToolBtn icon={<CheckSquare size={22} />} label="Task" onClick={() => onSpawn("todo")} />
-      <ToolBtn icon={<Image size={22} />} label="Media" onClick={() => onSpawn("foto")} />
+      <ToolBtn icon={<FileText size={22} />} label={t("nota")} onClick={() => onSpawn("nota")} />
+      <ToolBtn icon={<CheckSquare size={22} />} label={t("task")} onClick={() => onSpawn("todo")} />
+      <ToolBtn icon={<Image size={22} />} label={t("media")} onClick={() => onSpawn("foto")} />
       <div className="h-px w-10 mx-auto bg-border" />
-      <ToolBtn icon={<Columns size={22} />} label="Colonna" onClick={() => onSpawn("pannello_v")} />
-      <ToolBtn icon={<Columns size={22} className="rotate-90" />} label="Riga" onClick={() => onSpawn("pannello_o")} />
+      <ToolBtn icon={<Columns size={22} />} label={t("column")} onClick={() => onSpawn("pannello_v")} />
+      <ToolBtn icon={<Columns size={22} className="rotate-90" />} label={t("row")} onClick={() => onSpawn("pannello_o")} />
       <div className="h-px w-10 mx-auto bg-border" />
       <ToolBtn
         icon={<ArrowRight size={22} />}
-        label="Connetti"
+        label={t("connect")}
         onClick={onToggleLinkMode}
         active={linkMode}
       />
