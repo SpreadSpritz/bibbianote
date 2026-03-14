@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
-import { X, Palette } from "lucide-react";
+import { X, Palette, Link } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1", "#fce4ec"];
@@ -42,8 +42,37 @@ export default function Widget({
     if (linkMode) {
       e.stopPropagation();
       onLinkClick(widget.id);
+      return;
+    }
+    // Handle clicking on links inside the widget body
+    const target = e.target as HTMLElement;
+    if (target.tagName === "A" && target.getAttribute("href")) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open(target.getAttribute("href")!, "_blank", "noopener,noreferrer");
     }
   };
+
+  const insertLink = useCallback(() => {
+    const url = prompt("URL:");
+    if (!url) return;
+    // Basic URL validation
+    try {
+      new URL(url.startsWith("http") ? url : `https://${url}`);
+    } catch {
+      return;
+    }
+    const finalUrl = url.startsWith("http") ? url : `https://${url}`;
+    const selection = window.getSelection();
+    const selectedText = selection?.toString() || finalUrl;
+
+    if (bodyRef.current) {
+      bodyRef.current.focus();
+      const anchor = `<a href="${finalUrl}" class="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
+      document.execCommand("insertHTML", false, anchor);
+      handleContentChange();
+    }
+  }, [handleContentChange]);
 
   return (
     <div
@@ -76,6 +105,18 @@ export default function Widget({
           </span>
         )}
         <div className="flex items-center gap-1 ml-auto relative">
+          {!isPanel && (
+            <button
+              className="text-muted-foreground hover:text-foreground text-xs p-0.5"
+              title="Insert link"
+              onClick={(e) => {
+                e.stopPropagation();
+                insertLink();
+              }}
+            >
+              <Link size={12} />
+            </button>
+          )}
           <button
             className="text-muted-foreground hover:text-foreground text-xs p-0.5"
             onClick={(e) => {
