@@ -39,11 +39,21 @@ export default function BoardCanvas() {
     (e: DragEvent) => {
       e.preventDefault();
       const type = e.dataTransfer.getData("widget-type") as WidgetData["type"];
-      if (!type) return;
+      const existingId = e.dataTransfer.getData("widget-id");
 
+      // Moving an existing widget out of a panel onto the canvas
+      if (existingId) {
+        const boardX = (e.clientX - board.panX) / board.scale;
+        const boardY = (e.clientY - board.panY) / board.scale;
+        store.updateWidget(existingId, { parentId: null, x: boardX - 80, y: boardY - 40 });
+        save();
+        return;
+      }
+
+      if (!type) return;
       const boardX = (e.clientX - board.panX) / board.scale;
       const boardY = (e.clientY - board.panY) / board.scale;
-      const id = `w_${Date.now()}_${idCounter++}`;
+      const id = makeId();
       const isPanel = type.startsWith("pannello");
 
       store.addWidget({
