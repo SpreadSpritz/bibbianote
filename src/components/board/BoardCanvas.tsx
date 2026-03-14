@@ -68,6 +68,39 @@ export default function BoardCanvas() {
     e.dataTransfer.dropEffect = "copy";
   }, []);
 
+  // Drop new widget into a panel
+  const handleDropIntoPanel = useCallback(
+    (panelId: string, type: WidgetData["type"]) => {
+      const id = makeId();
+      store.addWidget({
+        id,
+        type,
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 100,
+        color: "",
+        content: "",
+        parentId: panelId,
+        snap: false,
+      });
+      save();
+    },
+    [store, save]
+  );
+
+  // Move existing widget into a panel
+  const handleWidgetDropIntoPanel = useCallback(
+    (panelId: string, widgetId: string) => {
+      // Don't allow dropping a panel into itself or nesting panels
+      const w = board.widgets.find((w) => w.id === widgetId);
+      if (!w || w.id === panelId || w.type.startsWith("pannello")) return;
+      store.updateWidget(widgetId, { parentId: panelId, x: 0, y: 0 });
+      save();
+    },
+    [board.widgets, store, save]
+  );
+
   // Pan start on viewport
   const handleVpPointerDown = useCallback(
     (e: PointerEvent) => {
