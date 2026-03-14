@@ -74,7 +74,6 @@ export default function Widget({
           <span className="text-[11px] uppercase text-muted-foreground pointer-events-none">
             {widget.type === "pannello_v" ? t("column") : t("row")}
           </span>
-          </span>
         )}
         <div className="flex items-center gap-1 ml-auto relative">
           <button
