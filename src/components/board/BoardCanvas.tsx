@@ -58,7 +58,7 @@ export default function BoardCanvas() {
 
   // Pan start on viewport
   const handleVpPointerDown = useCallback(
-    (e: React.PointerEvent) => {
+    (e: PointerEvent) => {
       if (linkMode) return;
       const target = e.target as HTMLElement;
       if (target !== vpRef.current && !target.closest("#board-root") === null) return;
