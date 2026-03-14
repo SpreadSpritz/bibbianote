@@ -72,7 +72,8 @@ export default function Widget({
       >
         {isPanel && (
           <span className="text-[11px] uppercase text-muted-foreground pointer-events-none">
-            {widget.type === "pannello_v" ? "Colonna" : "Riga"}
+            {widget.type === "pannello_v" ? t("column") : t("row")}
+          </span>
           </span>
         )}
         <div className="flex items-center gap-1 ml-auto relative">
