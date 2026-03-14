@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoardStore } from "@/hooks/useBoardStore";
 import type { WidgetData } from "@/types/board";

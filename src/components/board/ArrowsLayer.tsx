@@ -1,4 +1,4 @@
-import React from "react";
+
 import type { ConnectionData, WidgetData } from "@/types/board";
 
 interface ArrowsLayerProps {

@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { FileText, CheckSquare, Image, Columns, ArrowRight } from "lucide-react";
 
 interface ToolbarProps {
