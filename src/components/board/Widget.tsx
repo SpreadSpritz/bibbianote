@@ -122,7 +122,7 @@ export default function Widget({
         suppressContentEditableWarning
         onBlur={handleContentChange}
         dangerouslySetInnerHTML={!isPanel ? { __html: widget.content || "" } : undefined}
-        data-placeholder={widget.type === "nota" ? "Scrivi qui..." : widget.type === "todo" ? "Task list..." : ""}
+        data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
         style={{
           outline: "none",
           minHeight: 30,
