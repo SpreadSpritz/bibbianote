@@ -83,7 +83,7 @@ export default function BoardCanvas() {
 
   // Resize start
   const handleResizeStart = useCallback(
-    (id: string, e: React.PointerEvent) => {
+    (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
       if (!w) return;
       dragRef.current = { type: "resize", id, startX: e.clientX, startY: e.clientY, initX: w.width, initY: w.height };
