@@ -72,7 +72,7 @@ export default function BoardCanvas() {
 
   // Widget drag start
   const handleWidgetDragStart = useCallback(
-    (id: string, e: React.PointerEvent) => {
+    (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
       if (!w) return;
       dragRef.current = { type: "widget", id, startX: e.clientX, startY: e.clientY, initX: w.x, initY: w.y };
