@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoardStore } from "@/hooks/useBoardStore";
 import type { WidgetData } from "@/types/board";
@@ -58,7 +58,7 @@ export default function BoardCanvas() {
 
   // Pan start on viewport
   const handleVpPointerDown = useCallback(
-    (e: React.PointerEvent) => {
+    (e: PointerEvent) => {
       if (linkMode) return;
       const target = e.target as HTMLElement;
       if (target !== vpRef.current && !target.closest("#board-root") === null) return;
@@ -72,7 +72,7 @@ export default function BoardCanvas() {
 
   // Widget drag start
   const handleWidgetDragStart = useCallback(
-    (id: string, e: React.PointerEvent) => {
+    (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
       if (!w) return;
       dragRef.current = { type: "widget", id, startX: e.clientX, startY: e.clientY, initX: w.x, initY: w.y };
@@ -83,7 +83,7 @@ export default function BoardCanvas() {
 
   // Resize start
   const handleResizeStart = useCallback(
-    (id: string, e: React.PointerEvent) => {
+    (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
       if (!w) return;
       dragRef.current = { type: "resize", id, startX: e.clientX, startY: e.clientY, initX: w.width, initY: w.height };
@@ -94,7 +94,7 @@ export default function BoardCanvas() {
 
   // Pointer move
   const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
+    (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
       const dx = e.clientX - d.startX;

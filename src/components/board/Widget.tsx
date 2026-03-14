@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
 import { X, Palette } from "lucide-react";
 
@@ -9,8 +9,8 @@ interface WidgetProps {
   scale: number;
   onUpdate: (id: string, updates: Partial<WidgetData>) => void;
   onRemove: (id: string) => void;
-  onDragStart: (id: string, e: React.PointerEvent) => void;
-  onResizeStart: (id: string, e: React.PointerEvent) => void;
+  onDragStart: (id: string, e: PointerEvent) => void;
+  onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
 }
@@ -26,7 +26,7 @@ export default function Widget({
   onLinkClick,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [showColors, setShowColors] = React.useState(false);
+  const [showColors, setShowColors] = useState(false);
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
 
@@ -36,7 +36,7 @@ export default function Widget({
     }
   }, [widget.id, onUpdate]);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     if (linkMode) {
       e.stopPropagation();
       onLinkClick(widget.id);

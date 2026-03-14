@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { FileText, CheckSquare, Image, Columns, ArrowRight } from "lucide-react";
 
 interface ToolbarProps {
@@ -33,7 +33,7 @@ function ToolBtn({
   onClick,
   active,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;
