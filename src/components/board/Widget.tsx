@@ -9,8 +9,8 @@ interface WidgetProps {
   scale: number;
   onUpdate: (id: string, updates: Partial<WidgetData>) => void;
   onRemove: (id: string) => void;
-  onDragStart: (id: string, e: React.PointerEvent) => void;
-  onResizeStart: (id: string, e: React.PointerEvent) => void;
+  onDragStart: (id: string, e: PointerEvent) => void;
+  onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
 }
