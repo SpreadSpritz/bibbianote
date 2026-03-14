@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
 import { X, Palette } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1", "#fce4ec"];
 
@@ -27,6 +28,7 @@ export default function Widget({
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
+  const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
 
@@ -70,7 +72,7 @@ export default function Widget({
       >
         {isPanel && (
           <span className="text-[11px] uppercase text-muted-foreground pointer-events-none">
-            {widget.type === "pannello_v" ? "Colonna" : "Riga"}
+            {widget.type === "pannello_v" ? t("column") : t("row")}
           </span>
         )}
         <div className="flex items-center gap-1 ml-auto relative">
@@ -119,7 +121,7 @@ export default function Widget({
         suppressContentEditableWarning
         onBlur={handleContentChange}
         dangerouslySetInnerHTML={!isPanel ? { __html: widget.content || "" } : undefined}
-        data-placeholder={widget.type === "nota" ? "Scrivi qui..." : widget.type === "todo" ? "Task list..." : ""}
+        data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
         style={{
           outline: "none",
           minHeight: 30,
