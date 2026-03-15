@@ -87,9 +87,14 @@ export default function Widget({
               minWidth: 140,
               flexShrink: 0,
             }
-          : { left: widget.x, top: widget.y, width: widget.width }),
+          : {
+              left: widget.x,
+              top: widget.y,
+              // Horizontal panels auto-width, others use set width
+              width: widget.type === "pannello_o" ? "auto" : widget.width,
+              minWidth: widget.type === "pannello_o" ? 200 : undefined,
+            }),
         minHeight: 60,
-        // Panels auto-size, non-panels keep their set height
         height: isPanel ? "auto" : isInPanel ? "auto" : (widget.height || "auto"),
         backgroundColor: widget.color || undefined,
         zIndex: 1,
