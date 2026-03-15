@@ -28,6 +28,7 @@ export default function BoardCanvas() {
 
   const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
+  const [selectedTool, setSelectedTool] = useState<WidgetData["type"] | null>(null);
 
   // Load board on mount
   useEffect(() => {
