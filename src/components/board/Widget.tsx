@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, type PointerEvent, type MouseEvent, type DragEvent } from "react";
+import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
 import { X, Palette, Link } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,8 +15,6 @@ interface WidgetProps {
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
-  onDropIntoPanel?: (panelId: string, widgetType: WidgetData["type"], e: DragEvent) => void;
-  onWidgetDropIntoPanel?: (panelId: string, widgetId: string) => void;
 }
 
 export default function Widget({
@@ -29,15 +27,13 @@ export default function Widget({
   onResizeStart,
   linkMode,
   onLinkClick,
-  onDropIntoPanel,
-  onWidgetDropIntoPanel,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
   const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
+  const isInPanel = !!widget.parentId;
 
   const handleContentChange = useCallback(() => {
     if (bodyRef.current) {
@@ -64,13 +60,10 @@ export default function Widget({
     if (!url) return;
     try {
       new URL(url.startsWith("http") ? url : `https://${url}`);
-    } catch {
-      return;
-    }
+    } catch { return; }
     const finalUrl = url.startsWith("http") ? url : `https://${url}`;
     const selection = window.getSelection();
     const selectedText = selection?.toString() || finalUrl;
-
     if (bodyRef.current) {
       bodyRef.current.focus();
       const anchor = `<a href="${finalUrl}" class="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
@@ -79,69 +72,38 @@ export default function Widget({
     }
   }, [handleContentChange]);
 
-  // Panel drop handling
-  const handlePanelDragOver = useCallback((e: DragEvent) => {
-    if (!isPanel) return;
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "copy";
-    setDragOver(true);
-  }, [isPanel]);
-
-  const handlePanelDragLeave = useCallback((e: DragEvent) => {
-    if (!isPanel) return;
-    e.stopPropagation();
-    setDragOver(false);
-  }, [isPanel]);
-
-  const handlePanelDrop = useCallback((e: DragEvent) => {
-    if (!isPanel) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOver(false);
-
-    const widgetType = e.dataTransfer.getData("widget-type") as WidgetData["type"];
-    const existingWidgetId = e.dataTransfer.getData("widget-id");
-
-    if (existingWidgetId && onWidgetDropIntoPanel) {
-      onWidgetDropIntoPanel(widget.id, existingWidgetId);
-    } else if (widgetType && onDropIntoPanel) {
-      onDropIntoPanel(widget.id, widgetType, e);
-    }
-  }, [isPanel, widget.id, onDropIntoPanel, onWidgetDropIntoPanel]);
-
-  // For child widgets inside panels - make them draggable via HTML drag
-  const handleChildDragStart = useCallback((childId: string, e: DragEvent) => {
-    e.dataTransfer.setData("widget-id", childId);
-    e.dataTransfer.effectAllowed = "move";
-  }, []);
-
-  const isInPanel = !!widget.parentId;
-
   return (
     <div
       data-widget-id={widget.id}
-      draggable={isInPanel}
-      onDragStart={isInPanel ? (e: DragEvent) => handleChildDragStart(widget.id, e as any) : undefined}
-      className={`${isInPanel ? "relative" : "absolute"} rounded-xl flex flex-col widget-card ${isPanel ? `panel-widget border-2 ${dragOver ? "border-primary bg-primary/5" : "border-border bg-card/80"}` : "bg-card"} ${linkMode ? "cursor-crosshair" : ""} ${isInPanel ? "cursor-grab" : ""}`}
+      className={`${isInPanel ? "relative" : "absolute"} rounded-xl flex flex-col widget-card ${
+        isPanel
+          ? "panel-widget border-2 border-border bg-card/80"
+          : "bg-card"
+      } ${linkMode ? "cursor-crosshair" : ""}`}
       style={{
         ...(isInPanel
-          ? { width: widget.type === "pannello_o" ? undefined : "100%", minWidth: isInPanel ? 160 : undefined, flexShrink: 0 }
+          ? {
+              width: widget.type === "pannello_o" ? undefined : "100%",
+              minWidth: 140,
+              flexShrink: 0,
+            }
           : { left: widget.x, top: widget.y, width: widget.width }),
-        minHeight: 80,
-        height: isInPanel ? "auto" : (widget.height || "auto"),
+        minHeight: 60,
+        // Panels auto-size, non-panels keep their set height
+        height: isPanel ? "auto" : isInPanel ? "auto" : (widget.height || "auto"),
         backgroundColor: widget.color || undefined,
         zIndex: 1,
       }}
       onClick={handleClick}
     >
-      {/* Header */}
+      {/* Header - draggable for all widgets */}
       <div
-        className={`h-7 bg-foreground/[0.035] rounded-t-xl flex items-center justify-between px-2.5 ${isPanel ? "" : "widget-header"}`}
-        style={{ cursor: linkMode ? "crosshair" : "grab" }}
+        className={`h-7 bg-foreground/[0.035] rounded-t-xl flex items-center justify-between px-2.5`}
+        style={{ cursor: linkMode ? "crosshair" : "grab", touchAction: "none" }}
         onPointerDown={(e) => {
-          if (linkMode || isInPanel) return;
+          if (linkMode) return;
           e.stopPropagation();
+          e.preventDefault();
           onDragStart(widget.id, e);
         }}
       >
@@ -155,29 +117,23 @@ export default function Widget({
             <button
               className="text-muted-foreground hover:text-foreground text-xs p-0.5"
               title="Insert link"
-              onClick={(e) => {
-                e.stopPropagation();
-                insertLink();
-              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); insertLink(); }}
             >
               <Link size={12} />
             </button>
           )}
           <button
             className="text-muted-foreground hover:text-foreground text-xs p-0.5"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowColors(!showColors);
-            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }}
           >
             <Palette size={12} />
           </button>
           <button
             className="text-muted-foreground hover:text-destructive text-xs p-0.5"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(widget.id);
-            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onRemove(widget.id); }}
           >
             <X size={12} />
           </button>
@@ -204,10 +160,11 @@ export default function Widget({
       {isPanel ? (
         <div
           ref={bodyRef}
-          className={`p-3 flex-1 ${widget.type === "pannello_v" ? "flex flex-col gap-3" : "flex flex-row gap-3 overflow-x-auto"}`}
-          onDragOver={handlePanelDragOver}
-          onDragLeave={handlePanelDragLeave}
-          onDrop={handlePanelDrop}
+          className={`p-3 flex-1 ${
+            widget.type === "pannello_v"
+              ? "flex flex-col gap-3"
+              : "flex flex-row gap-3 overflow-x-auto"
+          }`}
           style={{ minHeight: 60 }}
         >
           {children && children.length > 0 ? (
@@ -225,7 +182,7 @@ export default function Widget({
               />
             ))
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground/50 text-sm pointer-events-none select-none">
+            <div className="flex items-center justify-center h-16 text-muted-foreground/50 text-sm pointer-events-none select-none">
               {widget.type === "pannello_v" ? "↕ Drop here" : "↔ Drop here"}
             </div>
           )}
@@ -248,12 +205,14 @@ export default function Widget({
         />
       )}
 
-      {/* Resizer */}
-      {!linkMode && !isInPanel && (
+      {/* Resizer - only for top-level non-panel widgets */}
+      {!linkMode && !isInPanel && !isPanel && (
         <div
           className="absolute right-1.5 bottom-1.5 w-4 h-4 cursor-nwse-resize border-r-2 border-b-2 border-foreground/20 rounded-br-sm z-[100]"
+          style={{ touchAction: "none" }}
           onPointerDown={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onResizeStart(widget.id, e);
           }}
         />

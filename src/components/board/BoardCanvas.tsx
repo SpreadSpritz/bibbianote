@@ -16,7 +16,6 @@ export default function BoardCanvas() {
   const { board, save } = store;
   const vpRef = useRef<HTMLDivElement>(null);
 
-  // Drag state
   const dragRef = useRef<{
     type: "pan" | "widget" | "resize";
     id?: string;
@@ -24,50 +23,33 @@ export default function BoardCanvas() {
     startY: number;
     initX: number;
     initY: number;
+    wasInPanel?: boolean;
+    moved?: boolean;
   } | null>(null);
 
   const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<WidgetData["type"] | null>(null);
 
-  // Load board on mount
   useEffect(() => {
     if (user?.uid) store.load();
   }, [user?.uid]);
 
-  // Drop handler for drag-and-drop from toolbar
+  // Drop from desktop toolbar drag
   const handleDrop = useCallback(
     (e: DragEvent) => {
       e.preventDefault();
       const type = e.dataTransfer.getData("widget-type") as WidgetData["type"];
-      const existingId = e.dataTransfer.getData("widget-id");
-
-      // Moving an existing widget out of a panel onto the canvas
-      if (existingId) {
-        const boardX = (e.clientX - board.panX) / board.scale;
-        const boardY = (e.clientY - board.panY) / board.scale;
-        store.updateWidget(existingId, { parentId: null, x: boardX - 80, y: boardY - 40 });
-        save();
-        return;
-      }
-
       if (!type) return;
       const boardX = (e.clientX - board.panX) / board.scale;
       const boardY = (e.clientY - board.panY) / board.scale;
       const id = makeId();
       const isPanel = type.startsWith("pannello");
-
       store.addWidget({
-        id,
-        type,
-        x: boardX - 125,
-        y: boardY - (isPanel ? 100 : 40),
-        width: 250,
-        height: isPanel ? 200 : 120,
-        color: "",
-        content: "",
-        parentId: null,
-        snap: isPanel,
+        id, type,
+        x: boardX - 125, y: boardY - (isPanel ? 100 : 40),
+        width: 250, height: isPanel ? 200 : 120,
+        color: "", content: "", parentId: null, snap: isPanel,
       });
       save();
     },
@@ -79,63 +61,23 @@ export default function BoardCanvas() {
     e.dataTransfer.dropEffect = "copy";
   }, []);
 
-  // Drop new widget into a panel
-  const handleDropIntoPanel = useCallback(
-    (panelId: string, type: WidgetData["type"]) => {
-      const id = makeId();
-      store.addWidget({
-        id,
-        type,
-        x: 0,
-        y: 0,
-        width: 220,
-        height: 100,
-        color: "",
-        content: "",
-        parentId: panelId,
-        snap: false,
-      });
-      save();
-    },
-    [store, save]
-  );
-
-  // Move existing widget into a panel
-  const handleWidgetDropIntoPanel = useCallback(
-    (panelId: string, widgetId: string) => {
-      // Don't allow dropping a panel into itself or nesting panels
-      const w = board.widgets.find((w) => w.id === widgetId);
-      if (!w || w.id === panelId || w.type.startsWith("pannello")) return;
-      store.updateWidget(widgetId, { parentId: panelId, x: 0, y: 0 });
-      save();
-    },
-    [board.widgets, store, save]
-  );
-
-  // Pan start on viewport (or tap-to-place on mobile)
+  // Tap-to-place or pan start
   const handleVpPointerDown = useCallback(
     (e: PointerEvent) => {
       if (linkMode) return;
       const target = e.target as HTMLElement;
       if (target.closest("[data-widget-id]")) return;
 
-      // Tap-to-place: if a tool is selected, place widget at tap position
       if (selectedTool) {
         const boardX = (e.clientX - board.panX) / board.scale;
         const boardY = (e.clientY - board.panY) / board.scale;
         const id = makeId();
         const isPanel = selectedTool.startsWith("pannello");
         store.addWidget({
-          id,
-          type: selectedTool,
-          x: boardX - 125,
-          y: boardY - (isPanel ? 100 : 40),
-          width: 250,
-          height: isPanel ? 200 : 120,
-          color: "",
-          content: "",
-          parentId: null,
-          snap: isPanel,
+          id, type: selectedTool,
+          x: boardX - 125, y: boardY - (isPanel ? 100 : 40),
+          width: 250, height: isPanel ? 200 : 120,
+          color: "", content: "", parentId: null, snap: isPanel,
         });
         save();
         setSelectedTool(null);
@@ -148,18 +90,40 @@ export default function BoardCanvas() {
     [board.panX, board.panY, board.scale, linkMode, selectedTool, store, save]
   );
 
-  // Widget drag start
+  // Widget drag start - works for both top-level and in-panel widgets
   const handleWidgetDragStart = useCallback(
     (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
       if (!w) return;
-      dragRef.current = { type: "widget", id, startX: e.clientX, startY: e.clientY, initX: w.x, initY: w.y };
+
+      // If widget is inside a panel, detach it first and compute absolute position
+      if (w.parentId) {
+        const el = document.querySelector(`[data-widget-id="${id}"]`);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const absX = (rect.left - board.panX) / board.scale;
+          const absY = (rect.top - board.panY) / board.scale;
+          store.updateWidget(id, { parentId: null, x: absX, y: absY, width: rect.width / board.scale });
+          dragRef.current = {
+            type: "widget", id,
+            startX: e.clientX, startY: e.clientY,
+            initX: absX, initY: absY,
+            wasInPanel: true, moved: false,
+          };
+        }
+      } else {
+        dragRef.current = {
+          type: "widget", id,
+          startX: e.clientX, startY: e.clientY,
+          initX: w.x, initY: w.y,
+          moved: false,
+        };
+      }
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
     },
-    [board.widgets]
+    [board.widgets, board.panX, board.panY, board.scale, store]
   );
 
-  // Resize start
   const handleResizeStart = useCallback(
     (id: string, e: PointerEvent) => {
       const w = board.widgets.find((w) => w.id === id);
@@ -170,13 +134,16 @@ export default function BoardCanvas() {
     [board.widgets]
   );
 
-  // Pointer move
   const handlePointerMove = useCallback(
     (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
       const dx = e.clientX - d.startX;
       const dy = e.clientY - d.startY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        d.moved = true;
+      }
 
       if (d.type === "pan") {
         store.setPan(d.initX + dx, d.initY + dy);
@@ -195,12 +162,43 @@ export default function BoardCanvas() {
     [board.scale, store]
   );
 
-  const handlePointerUp = useCallback(() => {
-    if (dragRef.current) {
+  const handlePointerUp = useCallback(
+    (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
       dragRef.current = null;
+
+      // Check if dragged widget should be dropped into a panel
+      if (d.type === "widget" && d.id && d.moved) {
+        const w = board.widgets.find((w) => w.id === d.id);
+        if (w && !w.parentId && !w.type.startsWith("pannello")) {
+          const panels = board.widgets.filter(
+            (p) => p.type.startsWith("pannello") && !p.parentId && p.id !== d.id
+          );
+          const wcx = w.x + w.width / 2;
+          const wcy = w.y + (w.height || 80) / 2;
+
+          for (const panel of panels) {
+            const el = document.querySelector(`[data-widget-id="${panel.id}"]`);
+            if (!el) continue;
+            const rect = el.getBoundingClientRect();
+            const px = (rect.left - board.panX) / board.scale;
+            const py = (rect.top - board.panY) / board.scale;
+            const pw = rect.width / board.scale;
+            const ph = rect.height / board.scale;
+
+            if (wcx > px && wcx < px + pw && wcy > py && wcy < py + ph) {
+              store.updateWidget(d.id!, { parentId: panel.id, x: 0, y: 0 });
+              break;
+            }
+          }
+        }
+      }
+
       save();
-    }
-  }, [save]);
+    },
+    [board.widgets, board.panX, board.panY, board.scale, store, save]
+  );
 
   // Wheel zoom
   useEffect(() => {
@@ -220,7 +218,59 @@ export default function BoardCanvas() {
     return () => vp.removeEventListener("wheel", handler);
   }, [board.panX, board.panY, board.scale, store, save]);
 
-  // Zoom buttons
+  // Pinch-to-zoom for mobile
+  const pinchRef = useRef<{ dist: number; scale: number; cx: number; cy: number } | null>(null);
+
+  useEffect(() => {
+    const vp = vpRef.current;
+    if (!vp) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchRef.current = {
+          dist: Math.hypot(dx, dy),
+          scale: board.scale,
+          cx: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          cy: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchRef.current) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist / pinchRef.current.dist;
+        const newScale = Math.min(Math.max(0.2, pinchRef.current.scale * ratio), 3);
+        const px = (pinchRef.current.cx - board.panX) / board.scale;
+        const py = (pinchRef.current.cy - board.panY) / board.scale;
+        store.setPan(pinchRef.current.cx - px * newScale, pinchRef.current.cy - py * newScale);
+        store.setScale(newScale);
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (pinchRef.current) {
+        pinchRef.current = null;
+        save();
+      }
+    };
+
+    vp.addEventListener("touchstart", onTouchStart, { passive: false });
+    vp.addEventListener("touchmove", onTouchMove, { passive: false });
+    vp.addEventListener("touchend", onTouchEnd);
+    return () => {
+      vp.removeEventListener("touchstart", onTouchStart);
+      vp.removeEventListener("touchmove", onTouchMove);
+      vp.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [board.panX, board.panY, board.scale, store, save]);
+
   const zoom = useCallback(
     (zoomIn: boolean) => {
       const cx = window.innerWidth / 2;
@@ -241,7 +291,6 @@ export default function BoardCanvas() {
     save();
   }, [store, save]);
 
-  // Link mode
   const handleLinkClick = useCallback(
     (id: string) => {
       if (!linkSource) {
@@ -251,8 +300,7 @@ export default function BoardCanvas() {
           id: linkSource + "-" + id,
           sourceId: linkSource,
           targetId: id,
-          offsetX: 0,
-          offsetY: 0,
+          offsetX: 0, offsetY: 0,
         });
         setLinkSource(null);
         setLinkMode(false);
@@ -263,7 +311,7 @@ export default function BoardCanvas() {
   );
 
   return (
-    <div className="fixed inset-0">
+    <div className="fixed inset-0 touch-none">
       <Toolbar
         linkMode={linkMode}
         onToggleLinkMode={() => {
@@ -274,10 +322,7 @@ export default function BoardCanvas() {
         selectedTool={selectedTool}
         onSelectTool={(type) => {
           setSelectedTool(type);
-          if (type) {
-            setLinkMode(false);
-            setLinkSource(null);
-          }
+          if (type) { setLinkMode(false); setLinkSource(null); }
         }}
       />
 
@@ -291,6 +336,7 @@ export default function BoardCanvas() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         style={{
+          touchAction: "none",
           backgroundPosition: `${board.panX}px ${board.panY}px`,
           backgroundSize: `${30 * board.scale}px ${30 * board.scale}px`,
         }}
@@ -319,16 +365,11 @@ export default function BoardCanvas() {
                 children={board.widgets.filter((c) => c.parentId === w.id)}
                 scale={board.scale}
                 onUpdate={store.updateWidget}
-                onRemove={(id) => {
-                  store.removeWidget(id);
-                  save();
-                }}
+                onRemove={(id) => { store.removeWidget(id); save(); }}
                 onDragStart={handleWidgetDragStart}
                 onResizeStart={handleResizeStart}
                 linkMode={linkMode}
                 onLinkClick={handleLinkClick}
-                onDropIntoPanel={handleDropIntoPanel}
-                onWidgetDropIntoPanel={handleWidgetDropIntoPanel}
               />
             ))}
         </div>
