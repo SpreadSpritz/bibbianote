@@ -112,16 +112,40 @@ export default function BoardCanvas() {
     [board.widgets, store, save]
   );
 
-  // Pan start on viewport
+  // Pan start on viewport (or tap-to-place on mobile)
   const handleVpPointerDown = useCallback(
     (e: PointerEvent) => {
       if (linkMode) return;
       const target = e.target as HTMLElement;
       if (target.closest("[data-widget-id]")) return;
+
+      // Tap-to-place: if a tool is selected, place widget at tap position
+      if (selectedTool) {
+        const boardX = (e.clientX - board.panX) / board.scale;
+        const boardY = (e.clientY - board.panY) / board.scale;
+        const id = makeId();
+        const isPanel = selectedTool.startsWith("pannello");
+        store.addWidget({
+          id,
+          type: selectedTool,
+          x: boardX - 125,
+          y: boardY - (isPanel ? 100 : 40),
+          width: 250,
+          height: isPanel ? 200 : 120,
+          color: "",
+          content: "",
+          parentId: null,
+          snap: isPanel,
+        });
+        save();
+        setSelectedTool(null);
+        return;
+      }
+
       dragRef.current = { type: "pan", startX: e.clientX, startY: e.clientY, initX: board.panX, initY: board.panY };
       (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     },
-    [board.panX, board.panY, linkMode]
+    [board.panX, board.panY, board.scale, linkMode, selectedTool, store, save]
   );
 
   // Widget drag start
