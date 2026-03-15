@@ -269,6 +269,15 @@ export default function BoardCanvas() {
         onToggleLinkMode={() => {
           setLinkMode(!linkMode);
           setLinkSource(null);
+          setSelectedTool(null);
+        }}
+        selectedTool={selectedTool}
+        onSelectTool={(type) => {
+          setSelectedTool(type);
+          if (type) {
+            setLinkMode(false);
+            setLinkSource(null);
+          }
         }}
       />
 
