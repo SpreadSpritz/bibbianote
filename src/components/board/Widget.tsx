@@ -22,7 +22,7 @@ interface WidgetProps {
 
 export default function Widget({
   widget,
-  children,
+  allWidgets,
   scale,
   onUpdate,
   onRemove,
