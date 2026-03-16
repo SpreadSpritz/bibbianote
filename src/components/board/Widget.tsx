@@ -199,7 +199,6 @@ export default function Widget({
               </div>
             );
           })()}
-          )}
         </div>
       ) : widget.type === "todo" ? (
         <TodoBody
