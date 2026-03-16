@@ -355,6 +355,9 @@ export default function BoardCanvas() {
             scale={board.scale}
             panX={board.panX}
             panY={board.panY}
+            onUpdateConnection={store.updateConnection}
+            onRemoveConnection={store.removeConnection}
+            onSave={save}
           />
           {board.widgets
             .filter((w) => !w.parentId)
