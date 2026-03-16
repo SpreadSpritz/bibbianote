@@ -2,6 +2,8 @@ import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } fro
 import type { WidgetData } from "@/types/board";
 import { X, Palette, Link } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import TodoBody from "./TodoBody";
+import MediaBody from "./MediaBody";
 
 const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1", "#fce4ec"];
 
