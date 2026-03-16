@@ -26,6 +26,8 @@ const translations = {
     language: "Language",
     writeHere: "Write here...",
     taskList: "Task list...",
+    addTask: "Add task...",
+    uploadMedia: "Click or drop image",
   },
   it: {
     loading: "Caricamento...",
