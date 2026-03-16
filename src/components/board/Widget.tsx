@@ -30,6 +30,7 @@ export default function Widget({
   onResizeStart,
   linkMode,
   onLinkClick,
+  inRow,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
