@@ -9,7 +9,7 @@ const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1"
 
 interface WidgetProps {
   widget: WidgetData;
-  children?: WidgetData[];
+  allWidgets: WidgetData[];
   scale: number;
   onUpdate: (id: string, updates: Partial<WidgetData>) => void;
   onRemove: (id: string) => void;
