@@ -87,14 +87,13 @@ export default function Widget({
       style={{
         ...(isInPanel
           ? {
-              width: widget.type === "pannello_o" ? undefined : "100%",
+              width: inRow ? widget.width || 220 : "100%",
               minWidth: 140,
               flexShrink: 0,
             }
           : {
               left: widget.x,
               top: widget.y,
-              // Horizontal panels auto-width, others use set width
               width: widget.type === "pannello_o" ? "auto" : widget.width,
               minWidth: widget.type === "pannello_o" ? 200 : undefined,
             }),
