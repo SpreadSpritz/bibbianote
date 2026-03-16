@@ -52,6 +52,8 @@ const translations = {
     language: "Lingua",
     writeHere: "Scrivi qui...",
     taskList: "Lista attività...",
+    addTask: "Aggiungi attività...",
+    uploadMedia: "Clicca o trascina immagine",
   },
   ja: {
     loading: "読み込み中...",
