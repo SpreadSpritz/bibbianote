@@ -187,6 +187,7 @@ export default function Widget({
                 onResizeStart={onResizeStart}
                 linkMode={linkMode}
                 onLinkClick={onLinkClick}
+                inRow={widget.type === "pannello_o"}
               />
             ))
           ) : (
