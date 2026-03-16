@@ -17,6 +17,7 @@ interface WidgetProps {
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
+  inRow?: boolean;
 }
 
 export default function Widget({
@@ -29,6 +30,7 @@ export default function Widget({
   onResizeStart,
   linkMode,
   onLinkClick,
+  inRow,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
@@ -85,14 +87,13 @@ export default function Widget({
       style={{
         ...(isInPanel
           ? {
-              width: widget.type === "pannello_o" ? undefined : "100%",
+              width: inRow ? widget.width || 220 : "100%",
               minWidth: 140,
               flexShrink: 0,
             }
           : {
               left: widget.x,
               top: widget.y,
-              // Horizontal panels auto-width, others use set width
               width: widget.type === "pannello_o" ? "auto" : widget.width,
               minWidth: widget.type === "pannello_o" ? 200 : undefined,
             }),
@@ -186,6 +187,7 @@ export default function Widget({
                 onResizeStart={onResizeStart}
                 linkMode={linkMode}
                 onLinkClick={onLinkClick}
+                inRow={widget.type === "pannello_o"}
               />
             ))
           ) : (
