@@ -365,7 +365,7 @@ export default function BoardCanvas() {
               <Widget
                 key={w.id}
                 widget={w}
-                children={board.widgets.filter((c) => c.parentId === w.id)}
+                allWidgets={board.widgets}
                 scale={board.scale}
                 onUpdate={store.updateWidget}
                 onRemove={(id) => { store.removeWidget(id); save(); }}
