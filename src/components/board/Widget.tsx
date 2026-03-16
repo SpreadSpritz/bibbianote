@@ -194,6 +194,20 @@ export default function Widget({
             </div>
           )}
         </div>
+      ) : widget.type === "todo" ? (
+        <TodoBody
+          content={widget.content}
+          widgetId={widget.id}
+          onUpdate={onUpdate}
+          linkMode={linkMode}
+        />
+      ) : widget.type === "foto" ? (
+        <MediaBody
+          content={widget.content}
+          widgetId={widget.id}
+          onUpdate={onUpdate}
+          linkMode={linkMode}
+        />
       ) : (
         <div
           ref={bodyRef}
@@ -202,7 +216,7 @@ export default function Widget({
           suppressContentEditableWarning
           onBlur={handleContentChange}
           dangerouslySetInnerHTML={{ __html: widget.content || "" }}
-          data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
+          data-placeholder={t("writeHere")}
           style={{
             outline: "none",
             minHeight: 30,

@@ -78,6 +78,8 @@ const translations = {
     language: "言語",
     writeHere: "ここに入力...",
     taskList: "タスクリスト...",
+    addTask: "タスクを追加...",
+    uploadMedia: "クリックまたはドロップ",
   },
 } as const;
 
