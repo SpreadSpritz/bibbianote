@@ -172,11 +172,25 @@ export default function BoardCanvas() {
       if (d.type === "widget" && d.id && d.moved) {
         const w = board.widgets.find((w) => w.id === d.id);
         if (w && !w.parentId) {
+          // Find all panels except self and descendants of self
+          const isDescendant = (parentId: string, targetId: string): boolean => {
+            let cur = parentId;
+            while (cur) {
+              if (cur === targetId) return true;
+              const p = board.widgets.find((w) => w.id === cur);
+              cur = p?.parentId || "";
+            }
+            return false;
+          };
           const panels = board.widgets.filter(
-            (p) => p.type.startsWith("pannello") && !p.parentId && p.id !== d.id
+            (p) => p.type.startsWith("pannello") && p.id !== d.id && !isDescendant(p.id, d.id!)
           );
           const wcx = w.x + w.width / 2;
           const wcy = w.y + (w.height || 80) / 2;
+
+          // Sort by DOM depth (deepest first) so innermost panel wins
+          let bestPanel: typeof panels[0] | null = null;
+          let bestArea = Infinity;
 
           for (const panel of panels) {
             const el = document.querySelector(`[data-widget-id="${panel.id}"]`);
@@ -188,9 +202,16 @@ export default function BoardCanvas() {
             const ph = rect.height / board.scale;
 
             if (wcx > px && wcx < px + pw && wcy > py && wcy < py + ph) {
-              store.updateWidget(d.id!, { parentId: panel.id, x: 0, y: 0 });
-              break;
+              const area = pw * ph;
+              if (area < bestArea) {
+                bestArea = area;
+                bestPanel = panel;
+              }
             }
+          }
+
+          if (bestPanel) {
+            store.updateWidget(d.id!, { parentId: bestPanel.id, x: 0, y: 0 });
           }
         }
       }
