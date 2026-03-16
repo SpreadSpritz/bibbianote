@@ -2,6 +2,8 @@ import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } fro
 import type { WidgetData } from "@/types/board";
 import { X, Palette, Link } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import TodoBody from "./TodoBody";
+import MediaBody from "./MediaBody";
 
 const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1", "#fce4ec"];
 
@@ -192,6 +194,20 @@ export default function Widget({
             </div>
           )}
         </div>
+      ) : widget.type === "todo" ? (
+        <TodoBody
+          content={widget.content}
+          widgetId={widget.id}
+          onUpdate={onUpdate}
+          linkMode={linkMode}
+        />
+      ) : widget.type === "foto" ? (
+        <MediaBody
+          content={widget.content}
+          widgetId={widget.id}
+          onUpdate={onUpdate}
+          linkMode={linkMode}
+        />
       ) : (
         <div
           ref={bodyRef}
@@ -200,7 +216,7 @@ export default function Widget({
           suppressContentEditableWarning
           onBlur={handleContentChange}
           dangerouslySetInnerHTML={{ __html: widget.content || "" }}
-          data-placeholder={widget.type === "nota" ? t("writeHere") : widget.type === "todo" ? t("taskList") : ""}
+          data-placeholder={t("writeHere")}
           style={{
             outline: "none",
             minHeight: 30,
