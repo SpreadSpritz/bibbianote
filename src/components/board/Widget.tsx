@@ -9,7 +9,7 @@ const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1"
 
 interface WidgetProps {
   widget: WidgetData;
-  children?: WidgetData[];
+  allWidgets: WidgetData[];
   scale: number;
   onUpdate: (id: string, updates: Partial<WidgetData>) => void;
   onRemove: (id: string) => void;
@@ -22,7 +22,7 @@ interface WidgetProps {
 
 export default function Widget({
   widget,
-  children,
+  allWidgets,
   scale,
   onUpdate,
   onRemove,
@@ -175,26 +175,30 @@ export default function Widget({
           }`}
           style={{ minHeight: 60 }}
         >
-          {children && children.length > 0 ? (
-            children.map((child) => (
-              <Widget
-                key={child.id}
-                widget={child}
-                scale={scale}
-                onUpdate={onUpdate}
-                onRemove={onRemove}
-                onDragStart={onDragStart}
-                onResizeStart={onResizeStart}
-                linkMode={linkMode}
-                onLinkClick={onLinkClick}
-                inRow={widget.type === "pannello_o"}
-              />
-            ))
-          ) : (
-            <div className="flex items-center justify-center h-16 text-muted-foreground/50 text-sm pointer-events-none select-none">
-              {widget.type === "pannello_v" ? "↕ Drop here" : "↔ Drop here"}
-            </div>
-          )}
+          {(() => {
+            const myChildren = allWidgets.filter((c) => c.parentId === widget.id);
+            return myChildren.length > 0 ? (
+              myChildren.map((child) => (
+                <Widget
+                  key={child.id}
+                  widget={child}
+                  allWidgets={allWidgets}
+                  scale={scale}
+                  onUpdate={onUpdate}
+                  onRemove={onRemove}
+                  onDragStart={onDragStart}
+                  onResizeStart={onResizeStart}
+                  linkMode={linkMode}
+                  onLinkClick={onLinkClick}
+                  inRow={widget.type === "pannello_o"}
+                />
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-16 text-muted-foreground/50 text-sm pointer-events-none select-none">
+                {widget.type === "pannello_v" ? "↕ Drop here" : "↔ Drop here"}
+              </div>
+            );
+          })()}
         </div>
       ) : widget.type === "todo" ? (
         <TodoBody
