@@ -171,7 +171,7 @@ export default function BoardCanvas() {
       // Check if dragged widget should be dropped into a panel
       if (d.type === "widget" && d.id && d.moved) {
         const w = board.widgets.find((w) => w.id === d.id);
-        if (w && !w.parentId && !w.type.startsWith("pannello")) {
+        if (w && !w.parentId) {
           const panels = board.widgets.filter(
             (p) => p.type.startsWith("pannello") && !p.parentId && p.id !== d.id
           );
