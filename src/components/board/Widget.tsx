@@ -17,6 +17,7 @@ interface WidgetProps {
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
   onLinkClick: (id: string) => void;
+  inRow?: boolean;
 }
 
 export default function Widget({
