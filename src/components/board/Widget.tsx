@@ -107,15 +107,16 @@ export default function Widget({
       style={{
         ...(isInPanel
           ? {
-              width: inRow ? widget.width || 220 : "100%",
+              width: inRow ? (isPanel ? "auto" : (widget.width || 220)) : "auto",
               minWidth: 140,
               flexShrink: 0,
+              flexGrow: inRow ? 0 : 1,
             }
           : {
               left: widget.x,
               top: widget.y,
-              width: widget.type === "pannello_o" ? "auto" : widget.width,
-              minWidth: widget.type === "pannello_o" ? 200 : undefined,
+              width: isPanel ? "auto" : widget.width,
+              minWidth: isPanel ? 200 : undefined,
             }),
         minHeight: 60,
         height: isPanel ? "auto" : isInPanel ? "auto" : (widget.height || "auto"),
