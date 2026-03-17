@@ -69,6 +69,9 @@ export default function BoardCanvas() {
       const target = e.target as HTMLElement;
       if (target.closest("[data-widget-id]")) return;
 
+      // Deselect when clicking on empty canvas
+      setSelectedWidgetId(null);
+
       if (selectedTool) {
         const boardX = (e.clientX - board.panX) / board.scale;
         const boardY = (e.clientY - board.panY) / board.scale;
