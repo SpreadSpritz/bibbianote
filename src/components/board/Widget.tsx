@@ -137,7 +137,7 @@ export default function Widget({
       >
         {/* Left side: selection controls */}
         <div className="flex items-center gap-0.5">
-          {selected && (
+          {selectedWidgetId === widget.id && (
             <>
               <button
                 className="text-muted-foreground hover:text-destructive p-0.5"
