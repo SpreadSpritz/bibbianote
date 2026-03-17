@@ -18,7 +18,7 @@ interface WidgetProps {
   linkMode: boolean;
   onLinkClick: (id: string) => void;
   inRow?: boolean;
-  selected?: boolean;
+  selectedWidgetId?: string | null;
   onSelect?: (id: string) => void;
 }
 
