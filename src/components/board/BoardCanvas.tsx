@@ -30,6 +30,7 @@ export default function BoardCanvas() {
   const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<WidgetData["type"] | null>(null);
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.uid) store.load();
