@@ -398,7 +398,7 @@ export default function BoardCanvas() {
                 onResizeStart={handleResizeStart}
                 linkMode={linkMode}
                 onLinkClick={handleLinkClick}
-                selected={selectedWidgetId === w.id}
+                selectedWidgetId={selectedWidgetId}
                 onSelect={setSelectedWidgetId}
               />
             ))}

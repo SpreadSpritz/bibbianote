@@ -259,7 +259,7 @@ export default function Widget({
                   linkMode={linkMode}
                   onLinkClick={onLinkClick}
                   inRow={widget.type === "pannello_o"}
-                  selected={selected}
+                  selectedWidgetId={selectedWidgetId}
                   onSelect={onSelect}
                 />
               ))
