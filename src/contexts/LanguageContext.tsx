@@ -57,6 +57,9 @@ const translations = {
     taskList: "Lista attività...",
     addTask: "Aggiungi attività...",
     uploadMedia: "Clicca o trascina immagine",
+    delete: "Elimina",
+    customize: "Personalizza",
+    title: "Titolo",
   },
   ja: {
     loading: "読み込み中...",
