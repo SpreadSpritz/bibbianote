@@ -46,12 +46,6 @@ export default function Widget({
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
   const isInPanel = !!widget.parentId;
 
-  const handleContentChange = useCallback(() => {
-    if (bodyRef.current) {
-      onUpdate(widget.id, { content: bodyRef.current.innerHTML });
-    }
-  }, [widget.id, onUpdate]);
-
   const handleClick = (e: MouseEvent) => {
     if (linkMode) {
       e.stopPropagation();
