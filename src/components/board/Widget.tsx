@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
-import { Trash2, Paintbrush, Type, Link, Check } from "lucide-react";
+import { Trash2, Paintbrush, Type, Check, PackagePlus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import TodoBody from "./TodoBody";
 import MediaBody from "./MediaBody";
@@ -58,7 +58,6 @@ export default function Widget({
       onLinkClick(widget.id);
       return;
     }
-    // Select widget on click
     onSelect?.(widget.id);
     const target = e.target as HTMLElement;
     if (target.tagName === "A" && target.getAttribute("href")) {
@@ -67,23 +66,6 @@ export default function Widget({
       window.open(target.getAttribute("href")!, "_blank", "noopener,noreferrer");
     }
   };
-
-  const insertLink = useCallback(() => {
-    const url = prompt("URL:");
-    if (!url) return;
-    try {
-      new URL(url.startsWith("http") ? url : `https://${url}`);
-    } catch { return; }
-    const finalUrl = url.startsWith("http") ? url : `https://${url}`;
-    const selection = window.getSelection();
-    const selectedText = selection?.toString() || finalUrl;
-    if (bodyRef.current) {
-      bodyRef.current.focus();
-      const anchor = `<a href="${finalUrl}" class="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
-      document.execCommand("insertHTML", false, anchor);
-      handleContentChange();
-    }
-  }, [handleContentChange]);
 
   const startEditingTitle = () => {
     setTitleDraft(widget.title || "");
@@ -200,17 +182,17 @@ export default function Widget({
           ) : null}
         </div>
 
-        {/* Right side: link button (always visible for non-panels) */}
+        {/* Right side: drop zone icon for panels */}
         <div className="flex items-center gap-0.5">
-          {!isPanel && (
-            <button
-              className="text-muted-foreground hover:text-foreground text-xs p-0.5"
-              title="Insert link"
+          {isPanel && (
+            <div
+              data-drop-zone={widget.id}
+              className="text-muted-foreground hover:text-primary p-0.5 transition-colors"
+              title="Drop widget here"
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); insertLink(); }}
             >
-              <Link size={12} strokeWidth={2} />
-            </button>
+              <PackagePlus size={14} strokeWidth={1.8} />
+            </div>
           )}
         </div>
 

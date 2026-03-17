@@ -176,7 +176,6 @@ export default function BoardCanvas() {
       if (d.type === "widget" && d.id && d.moved) {
         const w = board.widgets.find((w) => w.id === d.id);
         if (w && !w.parentId) {
-          // Find all panels except self and descendants of self
           const isDescendant = (parentId: string, targetId: string): boolean => {
             let cur = parentId;
             while (cur) {
@@ -186,36 +185,40 @@ export default function BoardCanvas() {
             }
             return false;
           };
-          const panels = board.widgets.filter(
-            (p) => p.type.startsWith("pannello") && p.id !== d.id && !isDescendant(p.id, d.id!)
-          );
-          const wcx = w.x + w.width / 2;
-          const wcy = w.y + (w.height || 80) / 2;
 
-          // Sort by DOM depth (deepest first) so innermost panel wins
-          let bestPanel: typeof panels[0] | null = null;
-          let bestArea = Infinity;
+          // Check if widget header overlaps any panel's drop zone icon
+          const headerEl = document.querySelector(`[data-widget-id="${d.id}"]`)?.querySelector('[style*="grab"], [style*="crosshair"]') as HTMLElement;
+          const widgetEl = document.querySelector(`[data-widget-id="${d.id}"]`) as HTMLElement;
+          const headerRect = headerEl?.getBoundingClientRect() || widgetEl?.getBoundingClientRect();
 
-          for (const panel of panels) {
-            const el = document.querySelector(`[data-widget-id="${panel.id}"]`);
-            if (!el) continue;
-            const rect = el.getBoundingClientRect();
-            const px = (rect.left - board.panX) / board.scale;
-            const py = (rect.top - board.panY) / board.scale;
-            const pw = rect.width / board.scale;
-            const ph = rect.height / board.scale;
+          if (headerRect) {
+            const dropZones = document.querySelectorAll("[data-drop-zone]");
+            let bestPanel: WidgetData | null = null;
+            let bestDist = Infinity;
 
-            if (wcx > px && wcx < px + pw && wcy > py && wcy < py + ph) {
-              const area = pw * ph;
-              if (area < bestArea) {
-                bestArea = area;
+            dropZones.forEach((zone) => {
+              const panelId = zone.getAttribute("data-drop-zone")!;
+              if (panelId === d.id || isDescendant(panelId, d.id!)) return;
+              const panel = board.widgets.find((p) => p.id === panelId);
+              if (!panel) return;
+
+              const zoneRect = zone.getBoundingClientRect();
+              const zoneCx = zoneRect.left + zoneRect.width / 2;
+              const zoneCy = zoneRect.top + zoneRect.height / 2;
+              const headerCx = headerRect.left + headerRect.width / 2;
+              const headerCy = headerRect.top + headerRect.height / 2;
+              const dist = Math.hypot(zoneCx - headerCx, zoneCy - headerCy);
+              const threshold = 40 * board.scale;
+
+              if (dist < threshold && dist < bestDist) {
+                bestDist = dist;
                 bestPanel = panel;
               }
-            }
-          }
+            });
 
-          if (bestPanel) {
-            store.updateWidget(d.id!, { parentId: bestPanel.id, x: 0, y: 0 });
+            if (bestPanel) {
+              store.updateWidget(d.id!, { parentId: (bestPanel as WidgetData).id, x: 0, y: 0 });
+            }
           }
         }
       }
