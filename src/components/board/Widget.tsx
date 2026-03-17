@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
-import { Trash2, Paintbrush, Type, Link, Check } from "lucide-react";
+import { Trash2, Paintbrush, Type, Check, PackagePlus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import TodoBody from "./TodoBody";
 import MediaBody from "./MediaBody";
