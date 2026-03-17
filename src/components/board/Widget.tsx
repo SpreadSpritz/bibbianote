@@ -103,7 +103,7 @@ export default function Widget({
         isPanel
           ? "panel-widget border-2 border-border bg-card/80"
           : "bg-card"
-      } ${linkMode ? "cursor-crosshair" : ""} ${selected ? "ring-2 ring-primary/50" : ""}`}
+      } ${linkMode ? "cursor-crosshair" : ""} ${selectedWidgetId === widget.id ? "ring-2 ring-primary/50" : ""}`}
       style={{
         ...(isInPanel
           ? {
