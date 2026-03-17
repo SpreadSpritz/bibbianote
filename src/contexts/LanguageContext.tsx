@@ -86,6 +86,9 @@ const translations = {
     taskList: "タスクリスト...",
     addTask: "タスクを追加...",
     uploadMedia: "クリックまたはドロップ",
+    delete: "削除",
+    customize: "カスタマイズ",
+    title: "タイトル",
   },
 } as const;
 
