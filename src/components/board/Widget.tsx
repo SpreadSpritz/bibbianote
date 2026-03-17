@@ -33,7 +33,7 @@ export default function Widget({
   linkMode,
   onLinkClick,
   inRow,
-  selected,
+  selectedWidgetId,
   onSelect,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
