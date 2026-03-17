@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
-import { X, Palette, Link } from "lucide-react";
+import { Trash2, Paintbrush, Type, Link, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import TodoBody from "./TodoBody";
 import MediaBody from "./MediaBody";
@@ -18,6 +18,8 @@ interface WidgetProps {
   linkMode: boolean;
   onLinkClick: (id: string) => void;
   inRow?: boolean;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 export default function Widget({
@@ -31,9 +33,14 @@ export default function Widget({
   linkMode,
   onLinkClick,
   inRow,
+  selected,
+  onSelect,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [showColors, setShowColors] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(widget.title || "");
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
@@ -51,6 +58,8 @@ export default function Widget({
       onLinkClick(widget.id);
       return;
     }
+    // Select widget on click
+    onSelect?.(widget.id);
     const target = e.target as HTMLElement;
     if (target.tagName === "A" && target.getAttribute("href")) {
       e.preventDefault();
@@ -76,6 +85,17 @@ export default function Widget({
     }
   }, [handleContentChange]);
 
+  const startEditingTitle = () => {
+    setTitleDraft(widget.title || "");
+    setEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.focus(), 50);
+  };
+
+  const confirmTitle = () => {
+    onUpdate(widget.id, { title: titleDraft });
+    setEditingTitle(false);
+  };
+
   return (
     <div
       data-widget-id={widget.id}
@@ -83,7 +103,7 @@ export default function Widget({
         isPanel
           ? "panel-widget border-2 border-border bg-card/80"
           : "bg-card"
-      } ${linkMode ? "cursor-crosshair" : ""}`}
+      } ${linkMode ? "cursor-crosshair" : ""} ${selected ? "ring-2 ring-primary/50" : ""}`}
       style={{
         ...(isInPanel
           ? {
@@ -104,9 +124,9 @@ export default function Widget({
       }}
       onClick={handleClick}
     >
-      {/* Header - draggable for all widgets */}
+      {/* Header */}
       <div
-        className={`h-7 bg-foreground/[0.035] rounded-t-xl flex items-center justify-between px-2.5`}
+        className="h-7 bg-foreground/[0.035] rounded-t-xl flex items-center justify-between px-1.5 gap-1"
         style={{ cursor: linkMode ? "crosshair" : "grab", touchAction: "none" }}
         onPointerDown={(e) => {
           if (linkMode) return;
@@ -115,12 +135,72 @@ export default function Widget({
           onDragStart(widget.id, e);
         }}
       >
-        {isPanel && (
-          <span className="text-[11px] uppercase text-muted-foreground pointer-events-none">
-            {widget.type === "pannello_v" ? t("column") : t("row")}
-          </span>
-        )}
-        <div className="flex items-center gap-1 ml-auto relative">
+        {/* Left side: selection controls */}
+        <div className="flex items-center gap-0.5">
+          {selected && (
+            <>
+              <button
+                className="text-muted-foreground hover:text-destructive p-0.5"
+                title={t("delete") || "Delete"}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onRemove(widget.id); }}
+              >
+                <Trash2 size={13} strokeWidth={2} />
+              </button>
+              <button
+                className="text-muted-foreground hover:text-foreground p-0.5"
+                title={t("customize") || "Customize"}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }}
+              >
+                <Paintbrush size={13} strokeWidth={2} />
+              </button>
+              <button
+                className="text-muted-foreground hover:text-foreground p-0.5"
+                title={t("title") || "Title"}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); startEditingTitle(); }}
+              >
+                <Type size={13} strokeWidth={2} />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Center: title */}
+        <div className="flex-1 min-w-0 mx-1 pointer-events-none">
+          {editingTitle ? (
+            <div className="flex items-center gap-1 pointer-events-auto">
+              <input
+                ref={titleInputRef}
+                className="bg-transparent border-b border-primary/40 text-xs text-foreground outline-none w-full px-0.5"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") confirmTitle(); if (e.key === "Escape") setEditingTitle(false); }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                className="text-primary hover:text-primary/80 p-0.5 pointer-events-auto"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); confirmTitle(); }}
+              >
+                <Check size={12} strokeWidth={2.5} />
+              </button>
+            </div>
+          ) : widget.title ? (
+            <span className="text-[11px] text-muted-foreground truncate block">
+              {widget.title}
+            </span>
+          ) : isPanel ? (
+            <span className="text-[11px] uppercase text-muted-foreground/50">
+              {widget.type === "pannello_v" ? t("column") : t("row")}
+            </span>
+          ) : null}
+        </div>
+
+        {/* Right side: link button (always visible for non-panels) */}
+        <div className="flex items-center gap-0.5">
           {!isPanel && (
             <button
               className="text-muted-foreground hover:text-foreground text-xs p-0.5"
@@ -128,40 +208,28 @@ export default function Widget({
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => { e.stopPropagation(); insertLink(); }}
             >
-              <Link size={12} />
+              <Link size={12} strokeWidth={2} />
             </button>
           )}
-          <button
-            className="text-muted-foreground hover:text-foreground text-xs p-0.5"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }}
-          >
-            <Palette size={12} />
-          </button>
-          <button
-            className="text-muted-foreground hover:text-destructive text-xs p-0.5"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onRemove(widget.id); }}
-          >
-            <X size={12} />
-          </button>
-          {showColors && (
-            <div className="absolute top-7 right-0 bg-card p-1.5 rounded-lg shadow-lg flex gap-1 z-50">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  className="w-5 h-5 rounded-full border border-border hover:scale-110 transition-transform"
-                  style={{ backgroundColor: c }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdate(widget.id, { color: c });
-                    setShowColors(false);
-                  }}
-                />
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* Color picker popover */}
+        {showColors && (
+          <div className="absolute top-7 left-0 bg-card p-1.5 rounded-lg shadow-lg flex gap-1 z-50">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                className="w-5 h-5 rounded-full border border-border hover:scale-110 transition-transform"
+                style={{ backgroundColor: c }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdate(widget.id, { color: c });
+                  setShowColors(false);
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Body */}
@@ -191,6 +259,8 @@ export default function Widget({
                   linkMode={linkMode}
                   onLinkClick={onLinkClick}
                   inRow={widget.type === "pannello_o"}
+                  selected={selected}
+                  onSelect={onSelect}
                 />
               ))
             ) : (
@@ -232,7 +302,7 @@ export default function Widget({
         />
       )}
 
-      {/* Resizer - only for top-level non-panel widgets */}
+      {/* Resizer */}
       {!linkMode && !isInPanel && !isPanel && (
         <div
           className="absolute right-1.5 bottom-1.5 w-4 h-4 cursor-nwse-resize border-r-2 border-b-2 border-foreground/20 rounded-br-sm z-[100]"

@@ -9,6 +9,7 @@ export interface WidgetData {
   content: string;
   parentId: string | null;
   snap: boolean;
+  title?: string;
 }
 
 export interface ConnectionData {
