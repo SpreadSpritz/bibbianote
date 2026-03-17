@@ -28,6 +28,9 @@ const translations = {
     taskList: "Task list...",
     addTask: "Add task...",
     uploadMedia: "Click or drop image",
+    delete: "Delete",
+    customize: "Customize",
+    title: "Title",
   },
   it: {
     loading: "Caricamento...",
