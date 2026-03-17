@@ -28,6 +28,9 @@ const translations = {
     taskList: "Task list...",
     addTask: "Add task...",
     uploadMedia: "Click or drop image",
+    delete: "Delete",
+    customize: "Customize",
+    title: "Title",
   },
   it: {
     loading: "Caricamento...",
@@ -54,6 +57,9 @@ const translations = {
     taskList: "Lista attività...",
     addTask: "Aggiungi attività...",
     uploadMedia: "Clicca o trascina immagine",
+    delete: "Elimina",
+    customize: "Personalizza",
+    title: "Titolo",
   },
   ja: {
     loading: "読み込み中...",
@@ -80,6 +86,9 @@ const translations = {
     taskList: "タスクリスト...",
     addTask: "タスクを追加...",
     uploadMedia: "クリックまたはドロップ",
+    delete: "削除",
+    customize: "カスタマイズ",
+    title: "タイトル",
   },
 } as const;
 

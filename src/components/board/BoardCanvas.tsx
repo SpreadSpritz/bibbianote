@@ -30,6 +30,7 @@ export default function BoardCanvas() {
   const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<WidgetData["type"] | null>(null);
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.uid) store.load();
@@ -67,6 +68,9 @@ export default function BoardCanvas() {
       if (linkMode) return;
       const target = e.target as HTMLElement;
       if (target.closest("[data-widget-id]")) return;
+
+      // Deselect when clicking on empty canvas
+      setSelectedWidgetId(null);
 
       if (selectedTool) {
         const boardX = (e.clientX - board.panX) / board.scale;
@@ -394,6 +398,8 @@ export default function BoardCanvas() {
                 onResizeStart={handleResizeStart}
                 linkMode={linkMode}
                 onLinkClick={handleLinkClick}
+                selectedWidgetId={selectedWidgetId}
+                onSelect={setSelectedWidgetId}
               />
             ))}
         </div>
