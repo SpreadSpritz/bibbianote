@@ -182,17 +182,17 @@ export default function Widget({
           ) : null}
         </div>
 
-        {/* Right side: link button (always visible for non-panels) */}
+        {/* Right side: drop zone icon for panels */}
         <div className="flex items-center gap-0.5">
-          {!isPanel && (
-            <button
-              className="text-muted-foreground hover:text-foreground text-xs p-0.5"
-              title="Insert link"
+          {isPanel && (
+            <div
+              data-drop-zone={widget.id}
+              className="text-muted-foreground hover:text-primary p-0.5 transition-colors"
+              title="Drop widget here"
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); insertLink(); }}
             >
-              <Link size={12} strokeWidth={2} />
-            </button>
+              <PackagePlus size={14} strokeWidth={1.8} />
+            </div>
           )}
         </div>
 
