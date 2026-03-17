@@ -46,13 +46,18 @@ export default function Widget({
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
   const isInPanel = !!widget.parentId;
 
+  const handleContentChange = useCallback(() => {
+    if (bodyRef.current) {
+      onUpdate(widget.id, { content: bodyRef.current.innerHTML });
+    }
+  }, [widget.id, onUpdate]);
+
   const handleClick = (e: MouseEvent) => {
     if (linkMode) {
       e.stopPropagation();
       onLinkClick(widget.id);
       return;
     }
-    // Select widget on click
     onSelect?.(widget.id);
     const target = e.target as HTMLElement;
     if (target.tagName === "A" && target.getAttribute("href")) {
@@ -61,23 +66,6 @@ export default function Widget({
       window.open(target.getAttribute("href")!, "_blank", "noopener,noreferrer");
     }
   };
-
-  const insertLink = useCallback(() => {
-    const url = prompt("URL:");
-    if (!url) return;
-    try {
-      new URL(url.startsWith("http") ? url : `https://${url}`);
-    } catch { return; }
-    const finalUrl = url.startsWith("http") ? url : `https://${url}`;
-    const selection = window.getSelection();
-    const selectedText = selection?.toString() || finalUrl;
-    if (bodyRef.current) {
-      bodyRef.current.focus();
-      const anchor = `<a href="${finalUrl}" class="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
-      document.execCommand("insertHTML", false, anchor);
-      handleContentChange();
-    }
-  }, [handleContentChange]);
 
   const startEditingTitle = () => {
     setTitleDraft(widget.title || "");
