@@ -1,11 +1,9 @@
 import { useRef, useCallback, useState, type PointerEvent, type MouseEvent } from "react";
 import type { WidgetData } from "@/types/board";
-import { Trash2, Paintbrush, Type, Check, PackagePlus } from "lucide-react";
+import { Check, PackagePlus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import TodoBody from "./TodoBody";
 import MediaBody from "./MediaBody";
-
-const COLORS = ["#ffffff", "#fff3cd", "#d1ecf1", "#f8d7da", "#d4edda", "#e2d5f1", "#fce4ec"];
 
 interface WidgetProps {
   widget: WidgetData;
@@ -37,10 +35,6 @@ export default function Widget({
   onSelect,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [showColors, setShowColors] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(widget.title || "");
-  const titleInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
@@ -67,16 +61,6 @@ export default function Widget({
     }
   };
 
-  const startEditingTitle = () => {
-    setTitleDraft(widget.title || "");
-    setEditingTitle(true);
-    setTimeout(() => titleInputRef.current?.focus(), 50);
-  };
-
-  const confirmTitle = () => {
-    onUpdate(widget.id, { title: titleDraft });
-    setEditingTitle(false);
-  };
 
   return (
     <div
@@ -118,60 +102,11 @@ export default function Widget({
           onDragStart(widget.id, e);
         }}
       >
-        {/* Left side: selection controls */}
         <div className="flex items-center gap-0.5">
-          {selectedWidgetId === widget.id && (
-            <>
-              <button
-                className="text-muted-foreground hover:text-destructive p-0.5"
-                title={t("delete") || "Delete"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); onRemove(widget.id); }}
-              >
-                <Trash2 size={13} strokeWidth={2} />
-              </button>
-              <button
-                className="text-muted-foreground hover:text-foreground p-0.5"
-                title={t("customize") || "Customize"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }}
-              >
-                <Paintbrush size={13} strokeWidth={2} />
-              </button>
-              <button
-                className="text-muted-foreground hover:text-foreground p-0.5"
-                title={t("title") || "Title"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); startEditingTitle(); }}
-              >
-                <Type size={13} strokeWidth={2} />
-              </button>
-            </>
-          )}
         </div>
 
-        {/* Center: title */}
         <div className="flex-1 min-w-0 mx-1 pointer-events-none">
-          {editingTitle ? (
-            <div className="flex items-center gap-1 pointer-events-auto">
-              <input
-                ref={titleInputRef}
-                className="bg-transparent border-b border-primary/40 text-xs text-foreground outline-none w-full px-0.5"
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") confirmTitle(); if (e.key === "Escape") setEditingTitle(false); }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <button
-                className="text-primary hover:text-primary/80 p-0.5 pointer-events-auto"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); confirmTitle(); }}
-              >
-                <Check size={12} strokeWidth={2.5} />
-              </button>
-            </div>
-          ) : widget.title ? (
+          {widget.title ? (
             <span className="text-[11px] text-muted-foreground truncate block">
               {widget.title}
             </span>
@@ -196,23 +131,6 @@ export default function Widget({
           )}
         </div>
 
-        {/* Color picker popover */}
-        {showColors && (
-          <div className="absolute top-7 left-0 bg-card p-1.5 rounded-lg shadow-lg flex gap-1 z-50">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                className="w-5 h-5 rounded-full border border-border hover:scale-110 transition-transform"
-                style={{ backgroundColor: c }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUpdate(widget.id, { color: c });
-                  setShowColors(false);
-                }}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Body */}

@@ -6,6 +6,7 @@ import Toolbar from "./Toolbar";
 import Widget from "./Widget";
 import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
+import SelectionToolbar from "./SelectionToolbar";
 
 let idCounter = 0;
 const makeId = () => `w_${Date.now()}_${idCounter++}`;
@@ -442,6 +443,14 @@ export default function BoardCanvas() {
             ))}
         </div>
       </div>
+
+      {selectedWidgetId && board.widgets.find(w => w.id === selectedWidgetId) && (
+        <SelectionToolbar
+          widget={board.widgets.find(w => w.id === selectedWidgetId)!}
+          onUpdate={(id, updates) => { store.updateWidget(id, updates); save(); }}
+          onRemove={(id) => { store.removeWidget(id); setSelectedWidgetId(null); save(); }}
+        />
+      )}
 
       <NavControls
         syncStatus={store.syncStatus}
