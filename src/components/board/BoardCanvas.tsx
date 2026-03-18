@@ -156,6 +156,34 @@ export default function BoardCanvas() {
           x: d.initX + dx / board.scale,
           y: d.initY + dy / board.scale,
         });
+
+        // Highlight nearby drop zones
+        const widgetEl = document.querySelector(`[data-widget-id="${d.id}"]`) as HTMLElement;
+        const headerRect = widgetEl?.getBoundingClientRect();
+        const dropZones = document.querySelectorAll("[data-drop-zone]");
+        const threshold = 80 * board.scale;
+
+        dropZones.forEach((zone) => {
+          const panelId = zone.getAttribute("data-drop-zone")!;
+          if (panelId === d.id) return;
+          const zoneRect = zone.getBoundingClientRect();
+          const dist = headerRect
+            ? Math.hypot(
+                zoneRect.left + zoneRect.width / 2 - (headerRect.left + headerRect.width / 2),
+                zoneRect.top + zoneRect.height / 2 - (headerRect.top + headerRect.height / 2)
+              )
+            : Infinity;
+          const el = zone as HTMLElement;
+          if (dist < threshold) {
+            el.style.transform = "scale(1.8)";
+            el.style.color = "hsl(var(--primary))";
+            el.style.transition = "transform 0.15s ease, color 0.15s ease";
+          } else {
+            el.style.transform = "";
+            el.style.color = "";
+            el.style.transition = "transform 0.15s ease, color 0.15s ease";
+          }
+        });
       } else if (d.type === "resize" && d.id) {
         store.updateWidget(d.id, {
           width: Math.max(160, d.initX + dx / board.scale),
@@ -171,6 +199,13 @@ export default function BoardCanvas() {
       const d = dragRef.current;
       if (!d) return;
       dragRef.current = null;
+
+      // Reset all drop zone highlights
+      document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+        const el = zone as HTMLElement;
+        el.style.transform = "";
+        el.style.color = "";
+      });
 
       // Check if dragged widget should be dropped into a panel
       if (d.type === "widget" && d.id && d.moved) {
