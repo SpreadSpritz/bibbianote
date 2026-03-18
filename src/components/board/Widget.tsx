@@ -131,23 +131,6 @@ export default function Widget({
           )}
         </div>
 
-        {/* Color picker popover */}
-        {showColors && (
-          <div className="absolute top-7 left-0 bg-card p-1.5 rounded-lg shadow-lg flex gap-1 z-50">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                className="w-5 h-5 rounded-full border border-border hover:scale-110 transition-transform"
-                style={{ backgroundColor: c }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUpdate(widget.id, { color: c });
-                  setShowColors(false);
-                }}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Body */}
