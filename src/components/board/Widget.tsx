@@ -61,16 +61,6 @@ export default function Widget({
     }
   };
 
-  const startEditingTitle = () => {
-    setTitleDraft(widget.title || "");
-    setEditingTitle(true);
-    setTimeout(() => titleInputRef.current?.focus(), 50);
-  };
-
-  const confirmTitle = () => {
-    onUpdate(widget.id, { title: titleDraft });
-    setEditingTitle(false);
-  };
 
   return (
     <div
