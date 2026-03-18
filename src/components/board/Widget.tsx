@@ -105,28 +105,8 @@ export default function Widget({
         <div className="flex items-center gap-0.5">
         </div>
 
-        {/* Center: title */}
         <div className="flex-1 min-w-0 mx-1 pointer-events-none">
-          {editingTitle ? (
-            <div className="flex items-center gap-1 pointer-events-auto">
-              <input
-                ref={titleInputRef}
-                className="bg-transparent border-b border-primary/40 text-xs text-foreground outline-none w-full px-0.5"
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") confirmTitle(); if (e.key === "Escape") setEditingTitle(false); }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <button
-                className="text-primary hover:text-primary/80 p-0.5 pointer-events-auto"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); confirmTitle(); }}
-              >
-                <Check size={12} strokeWidth={2.5} />
-              </button>
-            </div>
-          ) : widget.title ? (
+          {widget.title ? (
             <span className="text-[11px] text-muted-foreground truncate block">
               {widget.title}
             </span>
