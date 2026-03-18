@@ -6,6 +6,7 @@ import Toolbar from "./Toolbar";
 import Widget from "./Widget";
 import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
+import SelectionToolbar from "./SelectionToolbar";
 
 let idCounter = 0;
 const makeId = () => `w_${Date.now()}_${idCounter++}`;
