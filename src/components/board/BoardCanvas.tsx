@@ -200,6 +200,13 @@ export default function BoardCanvas() {
       if (!d) return;
       dragRef.current = null;
 
+      // Reset all drop zone highlights
+      document.querySelectorAll("[data-drop-zone]").forEach((zone) => {
+        const el = zone as HTMLElement;
+        el.style.transform = "";
+        el.style.color = "";
+      });
+
       // Check if dragged widget should be dropped into a panel
       if (d.type === "widget" && d.id && d.moved) {
         const w = board.widgets.find((w) => w.id === d.id);
