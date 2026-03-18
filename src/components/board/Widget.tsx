@@ -35,10 +35,6 @@ export default function Widget({
   onSelect,
 }: WidgetProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [showColors, setShowColors] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(widget.title || "");
-  const titleInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
