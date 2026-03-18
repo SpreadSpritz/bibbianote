@@ -102,36 +102,7 @@ export default function Widget({
           onDragStart(widget.id, e);
         }}
       >
-        {/* Left side: selection controls */}
         <div className="flex items-center gap-0.5">
-          {selectedWidgetId === widget.id && (
-            <>
-              <button
-                className="text-muted-foreground hover:text-destructive p-0.5"
-                title={t("delete") || "Delete"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); onRemove(widget.id); }}
-              >
-                <Trash2 size={13} strokeWidth={2} />
-              </button>
-              <button
-                className="text-muted-foreground hover:text-foreground p-0.5"
-                title={t("customize") || "Customize"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }}
-              >
-                <Paintbrush size={13} strokeWidth={2} />
-              </button>
-              <button
-                className="text-muted-foreground hover:text-foreground p-0.5"
-                title={t("title") || "Title"}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); startEditingTitle(); }}
-              >
-                <Type size={13} strokeWidth={2} />
-              </button>
-            </>
-          )}
         </div>
 
         {/* Center: title */}
