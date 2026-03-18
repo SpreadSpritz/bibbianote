@@ -208,7 +208,7 @@ export default function BoardCanvas() {
               const headerCx = headerRect.left + headerRect.width / 2;
               const headerCy = headerRect.top + headerRect.height / 2;
               const dist = Math.hypot(zoneCx - headerCx, zoneCy - headerCy);
-              const threshold = 40 * board.scale;
+              const threshold = 80 * board.scale;
 
               if (dist < threshold && dist < bestDist) {
                 bestDist = dist;
