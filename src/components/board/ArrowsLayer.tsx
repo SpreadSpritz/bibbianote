@@ -10,6 +10,8 @@ interface ArrowsLayerProps {
   onUpdateConnection: (id: string, updates: Partial<ConnectionData>) => void;
   onRemoveConnection: (id: string) => void;
   onSave: () => void;
+  selectedConnectionId?: string | null;
+  onSelectConnection?: (id: string | null) => void;
 }
 
 const SVG_OFFSET = 5000;
