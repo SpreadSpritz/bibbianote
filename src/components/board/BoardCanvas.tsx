@@ -74,6 +74,7 @@ export default function BoardCanvas() {
 
       // Deselect when clicking on empty canvas
       setSelectedWidgetId(null);
+      setSelectedConnectionId(null);
 
       if (selectedTool) {
         const boardX = (e.clientX - board.panX) / board.scale;
