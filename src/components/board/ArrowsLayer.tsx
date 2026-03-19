@@ -89,10 +89,15 @@ export default function ArrowsLayer({
 
   const handlePointerUp = useCallback(() => {
     if (dragRef.current) {
+      const d = dragRef.current;
       dragRef.current = null;
-      onSave();
+      if (!d.moved) {
+        onSelectConnection?.(d.connId);
+      } else {
+        onSave();
+      }
     }
-  }, [onSave]);
+  }, [onSave, onSelectConnection]);
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent, connId: string) => {
