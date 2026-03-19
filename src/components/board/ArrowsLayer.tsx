@@ -44,6 +44,7 @@ function edgePoint(
 export default function ArrowsLayer({
   connections, widgets, scale, panX, panY,
   onUpdateConnection, onRemoveConnection, onSave,
+  selectedConnectionId, onSelectConnection,
 }: ArrowsLayerProps) {
   const dragRef = useRef<{
     connId: string;
@@ -51,6 +52,7 @@ export default function ArrowsLayer({
     startY: number;
     initOffsetX: number;
     initOffsetY: number;
+    moved: boolean;
   } | null>(null);
 
   const handlePointerDown = useCallback(
