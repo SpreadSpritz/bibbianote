@@ -7,6 +7,7 @@ import Widget from "./Widget";
 import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
 import SelectionToolbar from "./SelectionToolbar";
+import ConnectionToolbar from "./ConnectionToolbar";
 
 let idCounter = 0;
 const makeId = () => `w_${Date.now()}_${idCounter++}`;
