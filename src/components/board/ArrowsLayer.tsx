@@ -160,9 +160,9 @@ export default function ArrowsLayer({
                 cy={pinY + SVG_OFFSET}
                 r="6"
                 fill="hsl(var(--background))"
-                stroke="hsl(var(--muted-foreground) / 0.6)"
-                strokeWidth="2"
-                className="pointer-events-auto cursor-grab active:cursor-grabbing hover:stroke-primary hover:stroke-[3px] transition-all"
+                stroke="hsl(var(--primary))"
+                strokeWidth="2.5"
+                className="pointer-events-auto cursor-grab active:cursor-grabbing transition-all hover:scale-110"
                 style={{ touchAction: "none" }}
                 onPointerDown={(e) => handlePointerDown(e, conn)}
               />
