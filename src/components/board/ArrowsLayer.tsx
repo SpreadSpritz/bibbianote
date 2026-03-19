@@ -139,8 +139,9 @@ export default function ArrowsLayer({
             <g key={conn.id}>
               <path
                 d={`M ${sEdge.x + SVG_OFFSET} ${sEdge.y + SVG_OFFSET} Q ${ctrlX + SVG_OFFSET} ${ctrlY + SVG_OFFSET} ${tEdge.x + SVG_OFFSET} ${tEdge.y + SVG_OFFSET}`}
-                stroke="hsl(var(--muted-foreground) / 0.5)"
-                strokeWidth="2.5"
+                stroke="hsl(var(--primary))"
+                strokeWidth="3"
+                opacity="0.9"
                 fill="none"
                 markerEnd="url(#arrowhead)"
               />
