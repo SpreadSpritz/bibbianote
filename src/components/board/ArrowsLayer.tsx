@@ -78,6 +78,7 @@ export default function ArrowsLayer({
       if (!d) return;
       const dx = (e.clientX - d.startX) / scale;
       const dy = (e.clientY - d.startY) / scale;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true;
       onUpdateConnection(d.connId, {
         offsetX: d.initOffsetX + dx,
         offsetY: d.initOffsetY + dy,
