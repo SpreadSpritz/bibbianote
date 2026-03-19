@@ -14,6 +14,7 @@ interface WidgetProps {
   onDragStart: (id: string, e: PointerEvent) => void;
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
+  linkSourceId?: string | null;
   onLinkClick: (id: string) => void;
   inRow?: boolean;
   selectedWidgetId?: string | null;
@@ -29,6 +30,7 @@ export default function Widget({
   onDragStart,
   onResizeStart,
   linkMode,
+  linkSourceId,
   onLinkClick,
   inRow,
   selectedWidgetId,

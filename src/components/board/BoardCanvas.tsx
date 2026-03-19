@@ -425,21 +425,22 @@ export default function BoardCanvas() {
           />
           {board.widgets
             .filter((w) => !w.parentId)
-            .map((w) => (
-              <Widget
-                key={w.id}
-                widget={w}
-                allWidgets={board.widgets}
-                scale={board.scale}
-                onUpdate={store.updateWidget}
-                onRemove={(id) => { store.removeWidget(id); save(); }}
-                onDragStart={handleWidgetDragStart}
-                onResizeStart={handleResizeStart}
-                linkMode={linkMode}
-                onLinkClick={handleLinkClick}
-                selectedWidgetId={selectedWidgetId}
-                onSelect={setSelectedWidgetId}
-              />
+              .map((w) => (
+                <Widget
+                  key={w.id}
+                  widget={w}
+                  allWidgets={board.widgets}
+                  scale={board.scale}
+                  onUpdate={store.updateWidget}
+                  onRemove={(id) => { store.removeWidget(id); save(); }}
+                  onDragStart={handleWidgetDragStart}
+                  onResizeStart={handleResizeStart}
+                  linkMode={linkMode}
+                  linkSourceId={linkSource}
+                  onLinkClick={handleLinkClick}
+                  selectedWidgetId={selectedWidgetId}
+                  onSelect={setSelectedWidgetId}
+                />
             ))}
         </div>
       </div>
