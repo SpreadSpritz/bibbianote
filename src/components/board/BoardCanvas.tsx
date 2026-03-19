@@ -7,6 +7,7 @@ import Widget from "./Widget";
 import ArrowsLayer from "./ArrowsLayer";
 import NavControls from "./NavControls";
 import SelectionToolbar from "./SelectionToolbar";
+import ConnectionToolbar from "./ConnectionToolbar";
 
 let idCounter = 0;
 const makeId = () => `w_${Date.now()}_${idCounter++}`;
@@ -32,6 +33,7 @@ export default function BoardCanvas() {
   const [linkSource, setLinkSource] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<WidgetData["type"] | null>(null);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.uid) store.load();
@@ -72,6 +74,7 @@ export default function BoardCanvas() {
 
       // Deselect when clicking on empty canvas
       setSelectedWidgetId(null);
+      setSelectedConnectionId(null);
 
       if (selectedTool) {
         const boardX = (e.clientX - board.panX) / board.scale;
@@ -422,6 +425,11 @@ export default function BoardCanvas() {
             onUpdateConnection={store.updateConnection}
             onRemoveConnection={store.removeConnection}
             onSave={save}
+            selectedConnectionId={selectedConnectionId}
+            onSelectConnection={(id) => {
+              setSelectedConnectionId(id);
+              setSelectedWidgetId(null);
+            }}
           />
           {board.widgets
             .filter((w) => !w.parentId)
@@ -450,6 +458,16 @@ export default function BoardCanvas() {
           widget={board.widgets.find(w => w.id === selectedWidgetId)!}
           onUpdate={(id, updates) => { store.updateWidget(id, updates); save(); }}
           onRemove={(id) => { store.removeWidget(id); setSelectedWidgetId(null); save(); }}
+        />
+      )}
+
+      {selectedConnectionId && board.connections.find(c => c.id === selectedConnectionId) && (
+        <ConnectionToolbar
+          onRemove={() => {
+            store.removeConnection(selectedConnectionId);
+            setSelectedConnectionId(null);
+            save();
+          }}
         />
       )}
 

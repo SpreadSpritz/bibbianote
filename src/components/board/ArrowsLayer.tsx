@@ -10,6 +10,8 @@ interface ArrowsLayerProps {
   onUpdateConnection: (id: string, updates: Partial<ConnectionData>) => void;
   onRemoveConnection: (id: string) => void;
   onSave: () => void;
+  selectedConnectionId?: string | null;
+  onSelectConnection?: (id: string | null) => void;
 }
 
 const SVG_OFFSET = 5000;
@@ -42,6 +44,7 @@ function edgePoint(
 export default function ArrowsLayer({
   connections, widgets, scale, panX, panY,
   onUpdateConnection, onRemoveConnection, onSave,
+  selectedConnectionId, onSelectConnection,
 }: ArrowsLayerProps) {
   const dragRef = useRef<{
     connId: string;
@@ -49,6 +52,7 @@ export default function ArrowsLayer({
     startY: number;
     initOffsetX: number;
     initOffsetY: number;
+    moved: boolean;
   } | null>(null);
 
   const handlePointerDown = useCallback(
@@ -62,6 +66,7 @@ export default function ArrowsLayer({
         startY: e.clientY,
         initOffsetX: conn.offsetX,
         initOffsetY: conn.offsetY,
+        moved: false,
       };
     },
     []
@@ -73,6 +78,7 @@ export default function ArrowsLayer({
       if (!d) return;
       const dx = (e.clientX - d.startX) / scale;
       const dy = (e.clientY - d.startY) / scale;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true;
       onUpdateConnection(d.connId, {
         offsetX: d.initOffsetX + dx,
         offsetY: d.initOffsetY + dy,
@@ -83,10 +89,15 @@ export default function ArrowsLayer({
 
   const handlePointerUp = useCallback(() => {
     if (dragRef.current) {
+      const d = dragRef.current;
       dragRef.current = null;
-      onSave();
+      if (!d.moved) {
+        onSelectConnection?.(d.connId);
+      } else {
+        onSave();
+      }
     }
-  }, [onSave]);
+  }, [onSave, onSelectConnection]);
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent, connId: string) => {
@@ -135,13 +146,15 @@ export default function ArrowsLayer({
           const pinX = midX + conn.offsetX;
           const pinY = midY + conn.offsetY;
 
+          const isSelected = selectedConnectionId === conn.id;
+
           return (
             <g key={conn.id}>
               <path
                 d={`M ${sEdge.x + SVG_OFFSET} ${sEdge.y + SVG_OFFSET} Q ${ctrlX + SVG_OFFSET} ${ctrlY + SVG_OFFSET} ${tEdge.x + SVG_OFFSET} ${tEdge.y + SVG_OFFSET}`}
-                stroke="hsl(var(--primary))"
-                strokeWidth="3"
-                opacity="0.9"
+                stroke={isSelected ? "hsl(var(--primary))" : "hsl(var(--primary))"}
+                strokeWidth={isSelected ? "4" : "3"}
+                opacity={isSelected ? "1" : "0.9"}
                 fill="none"
                 markerEnd="url(#arrowhead)"
               />
@@ -153,13 +166,17 @@ export default function ArrowsLayer({
                 fill="none"
                 className="pointer-events-auto cursor-pointer"
                 onDoubleClick={(e) => handleDoubleClick(e, conn.id)}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  onSelectConnection?.(conn.id);
+                }}
               />
               {/* Draggable control point */}
               <circle
                 cx={pinX + SVG_OFFSET}
                 cy={pinY + SVG_OFFSET}
-                r="6"
-                fill="hsl(var(--background))"
+                r={isSelected ? 8 : 6}
+                fill={isSelected ? "hsl(var(--primary))" : "hsl(var(--background))"}
                 stroke="hsl(var(--primary))"
                 strokeWidth="2.5"
                 className="pointer-events-auto cursor-grab active:cursor-grabbing transition-all hover:scale-110"
