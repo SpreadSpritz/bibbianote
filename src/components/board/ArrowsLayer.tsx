@@ -99,12 +99,13 @@ export default function ArrowsLayer({
 
   return (
     <svg
-      className="absolute pointer-events-none z-0"
+      className="absolute z-[2] overflow-visible"
       style={{
         top: -SVG_OFFSET,
         left: -SVG_OFFSET,
         width: SVG_OFFSET * 2,
         height: SVG_OFFSET * 2,
+        pointerEvents: "none",
       }}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -112,7 +113,7 @@ export default function ArrowsLayer({
     >
       <defs>
         <marker id="arrowhead" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto">
-          <path d="M 0 0 L 14 5 L 0 10 Q 3 5 0 0" fill="hsl(var(--muted-foreground))" />
+          <path d="M 0 0 L 14 5 L 0 10 Q 3 5 0 0" fill="hsl(var(--primary))" />
         </marker>
       </defs>
       <g>
@@ -138,8 +139,9 @@ export default function ArrowsLayer({
             <g key={conn.id}>
               <path
                 d={`M ${sEdge.x + SVG_OFFSET} ${sEdge.y + SVG_OFFSET} Q ${ctrlX + SVG_OFFSET} ${ctrlY + SVG_OFFSET} ${tEdge.x + SVG_OFFSET} ${tEdge.y + SVG_OFFSET}`}
-                stroke="hsl(var(--muted-foreground) / 0.5)"
-                strokeWidth="2.5"
+                stroke="hsl(var(--primary))"
+                strokeWidth="3"
+                opacity="0.9"
                 fill="none"
                 markerEnd="url(#arrowhead)"
               />
@@ -158,9 +160,9 @@ export default function ArrowsLayer({
                 cy={pinY + SVG_OFFSET}
                 r="6"
                 fill="hsl(var(--background))"
-                stroke="hsl(var(--muted-foreground) / 0.6)"
-                strokeWidth="2"
-                className="pointer-events-auto cursor-grab active:cursor-grabbing hover:stroke-primary hover:stroke-[3px] transition-all"
+                stroke="hsl(var(--primary))"
+                strokeWidth="2.5"
+                className="pointer-events-auto cursor-grab active:cursor-grabbing transition-all hover:scale-110"
                 style={{ touchAction: "none" }}
                 onPointerDown={(e) => handlePointerDown(e, conn)}
               />

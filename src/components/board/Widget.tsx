@@ -14,6 +14,7 @@ interface WidgetProps {
   onDragStart: (id: string, e: PointerEvent) => void;
   onResizeStart: (id: string, e: PointerEvent) => void;
   linkMode: boolean;
+  linkSourceId?: string | null;
   onLinkClick: (id: string) => void;
   inRow?: boolean;
   selectedWidgetId?: string | null;
@@ -29,6 +30,7 @@ export default function Widget({
   onDragStart,
   onResizeStart,
   linkMode,
+  linkSourceId,
   onLinkClick,
   inRow,
   selectedWidgetId,
@@ -39,6 +41,7 @@ export default function Widget({
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
   const isInPanel = !!widget.parentId;
+  const isLinkSource = linkSourceId === widget.id;
 
   const handleContentChange = useCallback(() => {
     if (bodyRef.current) {
@@ -69,7 +72,7 @@ export default function Widget({
         isPanel
           ? "panel-widget border-2 border-border bg-card/80"
           : "bg-card"
-      } ${linkMode ? "cursor-crosshair ring-2 ring-sky-400/70 shadow-[0_0_12px_hsl(199,90%,60%,0.3)]" : ""} ${selectedWidgetId === widget.id ? "ring-2 ring-primary/50" : ""}`}
+      } ${linkMode ? "cursor-crosshair linking-mode" : ""} ${isLinkSource ? "linking-source" : ""} ${selectedWidgetId === widget.id ? "ring-2 ring-primary/50" : ""}`}
       style={{
         ...(isInPanel
           ? {
@@ -158,6 +161,7 @@ export default function Widget({
                   onDragStart={onDragStart}
                   onResizeStart={onResizeStart}
                   linkMode={linkMode}
+                  linkSourceId={linkSourceId}
                   onLinkClick={onLinkClick}
                   inRow={widget.type === "pannello_o"}
                   selectedWidgetId={selectedWidgetId}
