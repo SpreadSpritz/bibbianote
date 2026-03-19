@@ -461,6 +461,16 @@ export default function BoardCanvas() {
         />
       )}
 
+      {selectedConnectionId && board.connections.find(c => c.id === selectedConnectionId) && (
+        <ConnectionToolbar
+          onRemove={() => {
+            store.removeConnection(selectedConnectionId);
+            setSelectedConnectionId(null);
+            save();
+          }}
+        />
+      )}
+
       <NavControls
         syncStatus={store.syncStatus}
         scale={board.scale}
