@@ -99,12 +99,13 @@ export default function ArrowsLayer({
 
   return (
     <svg
-      className="absolute pointer-events-none z-0"
+      className="absolute z-[2] overflow-visible"
       style={{
         top: -SVG_OFFSET,
         left: -SVG_OFFSET,
         width: SVG_OFFSET * 2,
         height: SVG_OFFSET * 2,
+        pointerEvents: "none",
       }}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -112,7 +113,7 @@ export default function ArrowsLayer({
     >
       <defs>
         <marker id="arrowhead" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto">
-          <path d="M 0 0 L 14 5 L 0 10 Q 3 5 0 0" fill="hsl(var(--muted-foreground))" />
+          <path d="M 0 0 L 14 5 L 0 10 Q 3 5 0 0" fill="hsl(var(--primary))" />
         </marker>
       </defs>
       <g>
