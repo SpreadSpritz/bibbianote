@@ -41,6 +41,7 @@ export default function Widget({
 
   const isPanel = widget.type === "pannello_v" || widget.type === "pannello_o";
   const isInPanel = !!widget.parentId;
+  const isLinkSource = linkSourceId === widget.id;
 
   const handleContentChange = useCallback(() => {
     if (bodyRef.current) {
