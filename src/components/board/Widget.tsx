@@ -161,6 +161,7 @@ export default function Widget({
                   onDragStart={onDragStart}
                   onResizeStart={onResizeStart}
                   linkMode={linkMode}
+                  linkSourceId={linkSourceId}
                   onLinkClick={onLinkClick}
                   inRow={widget.type === "pannello_o"}
                   selectedWidgetId={selectedWidgetId}
