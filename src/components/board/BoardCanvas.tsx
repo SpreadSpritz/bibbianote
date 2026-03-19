@@ -425,6 +425,11 @@ export default function BoardCanvas() {
             onUpdateConnection={store.updateConnection}
             onRemoveConnection={store.removeConnection}
             onSave={save}
+            selectedConnectionId={selectedConnectionId}
+            onSelectConnection={(id) => {
+              setSelectedConnectionId(id);
+              setSelectedWidgetId(null);
+            }}
           />
           {board.widgets
             .filter((w) => !w.parentId)
