@@ -66,6 +66,7 @@ export default function ArrowsLayer({
         startY: e.clientY,
         initOffsetX: conn.offsetX,
         initOffsetY: conn.offsetY,
+        moved: false,
       };
     },
     []
